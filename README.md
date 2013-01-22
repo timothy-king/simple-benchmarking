@@ -8,6 +8,10 @@ A) Setup:
   # add-benchmarks.sh $DIRECTORY $LOGIC
 4) Create problem set (pure sql atm sorry)
 5) Change config/{logpath,password,user}
+6) Compile runlim
+  # cd runlim-sigxcpu
+  # ./configure
+  # make
 
 B) Run jobs:
   # cd scripts

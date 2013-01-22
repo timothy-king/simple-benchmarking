@@ -85,6 +85,9 @@ typedef enum Status Status;
 "    --time-limit=<number>      set time limit to <number> seconds\n" \
 "    -t <number>\n"\
 "\n" \
+"    --sigxcpu-delay=<number>   set SIGXCPU waiting time limit to <number>\n"\
+"    -x <number>                microseconds. (default 2000)\n" \
+"\n" \
 "    --real-time-limit=<number> set real time limit to <number> seconds\n" \
 "    -r <number>\n"\
 "\n" \
@@ -560,14 +563,14 @@ static int caught_out_of_memory;
 static int caught_out_of_time;
 
 /*------------------------------------------------------------------------*/
+static unsigned sigxcpu_delay;
 
 static void
 really_kill_child (void)
 {
   // be nice to CVC4's stats
   kill (child_pid, SIGXCPU);
-  usleep (10000);
-  usleep (10);
+  usleep (sigxcpu_delay);
   kill (child_pid, SIGTERM);
   usleep (10);
   kill (child_pid, SIGTERM);
@@ -681,6 +684,7 @@ main (int argc, char **argv)
   real_time_limit = time_limit;
   space_limit = get_physical_mb ();	/* physical memory size */
 
+  sigxcpu_delay = 2*1000;               /* 2 seconds. */
   for (i = 1; i < argc; i++)
     {
       if (argv[i][0] == '-')
@@ -708,6 +712,14 @@ main (int argc, char **argv)
 	  else if (strstr (argv[i], "--space-limit=") == argv[i])
 	    {
 	      space_limit = parse_number_rhs (argv[i]);
+	    }
+	  else if (argv[i][1] == 'x')
+	    {
+	      sigxcpu_delay = parse_number_argument (&i, argc, argv);
+	    }
+	  else if (strstr (argv[i], "--sigxcpu-delay=") == argv[i])
+	    {
+	      sigxcpu_delay = parse_number_rhs (argv[i]);
 	    }
 	  else if (strcmp (argv[i], "-v") == 0 ||
 	           strcmp (argv[i], "--version") == 0)

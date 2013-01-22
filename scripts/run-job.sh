@@ -11,6 +11,7 @@ MEM_LIMIT=1500
 LOG_PATH=`cat ../config/logpath`
 USER=`cat ../config/user`
 PASSWORD=`cat ../config/password`
+RUN_LIM="../runlim-sigxcpu/runlim"
 
 CVC4=false
 
@@ -142,12 +143,12 @@ do
     OUT_LOG=$LOG_PATH$JOB_ID/$PROBLEM_ID.out
     #runlimp log
     RUNLIM_LOG=$LOG_PATH$JOB_ID/$PROBLEM_ID.runlim
-    
-    # running the binary on the benchmark 
-    runlim -t $TIME_LIMIT -s $MEM_LIMIT -o $RUNLIM_LOG $BINARY $ARGS $PROBLEM_PATH 1> $OUT_LOG 2> $ERR_LOG
+
+    # running the binary on the benchmark
+    $RUN_LIM -t $TIME_LIMIT -s $MEM_LIMIT -o $RUNLIM_LOG $BINARY $ARGS $PROBLEM_PATH 1> $OUT_LOG 2> $ERR_LOG
 
     echo "ExitCode=$?" >> $RUNLIM_LOG
-    
+
     # store run times
     RUN_TIME=`grep "\[runlim\] time:" $RUNLIM_LOG | sed 's/.*time:\s*//' | sed 's/\sseconds//' `
     MEMORY=`grep "space:" $RUNLIM_LOG | sed 's/.*space:\s*//' | sed 's/\sMB//'`
