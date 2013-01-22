@@ -7,8 +7,10 @@ USAGE="Usage: $0 -b <binary-path> -p <problem-set> -a <args> -t <time-limit> -m 
 TIME_LIMIT=100
 MEM_LIMIT=1500
 
-# default log path
-LOG_PATH=/home/taking/cluster/logs/
+
+LOG_PATH=`cat ../config/logpath`
+USER=`cat ../config/user`
+PASSWORD=`cat ../config/password`
 
 CVC4=false
 
@@ -97,14 +99,14 @@ if [[ $JOB_NAME = "" ]]; then
 fi
 
 # storing the current job in the database
-SQL_OUT=`mysql -h localhost -u root -pcluster <<EOF
-   use smt_cluster;
+SQL_OUT=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+   use benchmarking;
    insert into Jobs VALUES(default, "$JOB_NAME", "$JOB_DESCRIPTION", $TIME_LIMIT, $MEM_LIMIT, $PROBLEM_SET, "$ARGS", default);
 EOF`
 
 # Getting job number
-JOB_ID_STRING=`mysql -h localhost -u root -pcluster <<EOF
-   use smt_cluster;
+JOB_ID_STRING=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+   use benchmarking;
    select MAX(id) from Jobs; 
 EOF`
 
@@ -114,8 +116,8 @@ JOB_ID=${JOB_ID_STRING[1]}
 echo "Running job $JOB_ID"
 
 # Getting problem paths
-PROBLEMS=`mysql -h localhost -u root -pcluster <<EOF
-   use smt_cluster;
+PROBLEMS=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+   use benchmarking;
    select Problems.id, Problems.path FROM Problems INNER JOIN ProblemSetToProblem ON Problems.id=ProblemSetToProblem.problem_id WHERE ProblemSetToProblem.problem_set_id=$PROBLEM_SET;
 EOF`
 
@@ -124,7 +126,7 @@ if [ ! -d "$LOG_PATH$JOB_ID" ]; then
     mkdir $LOG_PATH$JOB_ID
 fi
 
-# temporary file for runlim output 
+# temporary file for runlim output
 TEMP=runlim_temp
 
 PROBLEM_ARRAY=($PROBLEMS)
@@ -157,8 +159,8 @@ do
     fi
 
     # store job result
-    JOB_RESULT_ID_STR=`mysql -u root -pcluster -h localhost <<EOF
-   use smt_cluster; 
+    JOB_RESULT_ID_STR=`mysql -u $USER -p$PASSWORD -h localhost <<EOF
+   use benchmarking;
    insert into JobResults VALUES(default, $JOB_ID, $PROBLEM_ID, $RUN_TIME, $MEMORY, "$RESULT", $EXIT_STATUS);
    select MAX(id) from JobResults;
 EOF`
@@ -166,8 +168,8 @@ EOF`
     JOB_RESULT_ID_STR=($JOB_RESULT_ID_STR)
     JOB_RESULT_ID=${JOB_RESULT_ID_STR[1]}
     if [[ $CVC4 ]]; then
-	echo `./collectStats.py $JOB_RESULT_ID $ERR_LOG`
+	echo `./collectStats.py $JOB_RESULT_ID $ERR_LOG $USER $PASSWORD`
     fi
-    
+
 done
 
