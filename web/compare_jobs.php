@@ -13,7 +13,11 @@ $password_file="../config/password";
 
 $user=trim(file_get_contents($user_file));
 $password=trim(file_get_contents($password_file));
+
+$user=trim(file_get_contents("../config/user"));
+$password=trim(file_get_contents("../config/password"));
 $database="benchmarking";
+
 
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
