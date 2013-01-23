@@ -33,8 +33,7 @@
    </tr>
    <tr>
    <td> Statistics: </td>
-   <td> <textarea type="text" name="statistic" rows="4" cols="50">
-   </textarea> </td>
+   <td> <input type="text" name="statistic"> </td>
    </tr>
    </table>
    <input type="Submit">

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # usage string
-USAGE="Usage: $0 -b <binary-path> -p <problem-set> -a <args> -t <time-limit> -m <memory-limit> -n <job-name> -d <job-description> [-c running cvc4 (used for stats)]"
+USAGE="Usage: $0 -b <binary-path> -p <problem-set> -a <args> -t <time-limit> -m <memory-limit> -n <job-name> -d <job-description> [-c collect cvc4 stats] [-z collect z3 stats]"
 
 # default time and memory limit
 TIME_LIMIT=100
@@ -14,12 +14,16 @@ PASSWORD=`cat ../config/password`
 RUN_LIM="../runlim-sigxcpu/runlim"
 
 CVC4=false
+Z3=false
 
 # parsing options
-while getopts "cp:b:a:t:m:d:n:" opt; do
+while getopts "zcp:b:a:t:m:d:n:" opt; do
     case $opt in
 	c)
 	    CVC4=true;
+	    ;;
+	z)
+	    Z3=true;
 	    ;;
 	b)
 	    if [ ! -f "$OPTARG" ]; then
@@ -88,6 +92,11 @@ if [[ -z $PROBLEM_SET ]]; then
     exit 1
 fi
 
+if [ "$CVC4" == "true" -a "$Z3" == "true" ]; then
+    echo "Can only collect statistics for one solver. "
+    echo $USAGE
+    exit 1
+fi
 
 ##############
 ### MySql ###
@@ -153,7 +162,7 @@ do
     RUN_TIME=`grep "\[runlim\] time:" $RUNLIM_LOG | sed 's/.*time:\s*//' | sed 's/\sseconds//' `
     MEMORY=`grep "space:" $RUNLIM_LOG | sed 's/.*space:\s*//' | sed 's/\sMB//'`
     EXIT_STATUS=`grep "ExitCode=" $RUNLIM_LOG | sed 's/ExitCode=//'`
-    RESULT=`cat $OUT_LOG`
+    RESULT=`head -1 $OUT_LOG`
     echo "the result is $RESULT "
     if [[ "$RESULT" != "sat" && "$RESULT" != "unsat" ]]; then
 	RESULT="unknown"
@@ -168,9 +177,16 @@ EOF`
 
     JOB_RESULT_ID_STR=($JOB_RESULT_ID_STR)
     JOB_RESULT_ID=${JOB_RESULT_ID_STR[1]}
-    if [[ $CVC4 ]]; then
-	echo `./collectStats.py $JOB_RESULT_ID $ERR_LOG $USER $PASSWORD`
+    if [[ "$CVC4" == "true" ]]; then
+	echo `./collectStatsCvc4.py $JOB_RESULT_ID $ERR_LOG $USER $PASSWORD`
     fi
+
+    if [[ "$Z3" == "true" ]]; then
+	# z3 prints statistics to regular output 
+	echo `./collectStatsZ3.py $JOB_RESULT_ID $OUT_LOG $USER $PASSWORD`
+    fi
+
+    
 
 done
 

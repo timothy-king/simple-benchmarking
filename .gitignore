@@ -1,0 +1,5 @@
+# Log files
+logs
+
+#Configuration files
+config/*

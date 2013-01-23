@@ -7,7 +7,7 @@ A) Setup:
   # cd scripts
   # add-benchmarks.sh $DIRECTORY $LOGIC
 4) Create problem set (pure sql atm sorry)
-5) Change config/{logpath,password,user}
+5) Create one line text files in config/{logpath,password,user} containing path for logs, mysql password and mysql user. 
 6) Compile runlim
   # cd runlim-sigxcpu
   # ./configure

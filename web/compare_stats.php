@@ -8,9 +8,12 @@
 
 
    <?php
-   $user="taking";
-$password="cluster";
-$database="smt_cluster";
+$user_file="../config/user";
+$password_file="../config/password";
+
+$user=trim(file_get_contents($user_file));
+$password=trim(file_get_contents($password_file));
+$database="benchmarking";
 
 $statistic=$_GET['statistic'];
 $statistic=mysql_real_escape_string($statistic); 
