@@ -45,10 +45,10 @@ with con:
     today = datetime.date.today()
     one_day = datetime.timedelta(days=1)
     yesterday = today - one_day
-    yesterdayStr = yesterday.strftime("%m/%d/%y")
+    yesterdayStr = yesterday.strftime("%Y-%m-%d")
 
     cur = con.cursor()
-    cur.execute("SELECT * from Jobs where Jobs.timestamp >= %s;", yesterdayStr)
+    cur.execute('SELECT * from Jobs where Jobs.timestamp >= %s;', yesterdayStr)
     jobs = cur.fetchall()
     for j in jobs:
         printJob(j)
