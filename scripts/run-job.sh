@@ -147,7 +147,7 @@ do
     # store job result
    `mysql -u $USER -p$PASSWORD -h localhost <<EOF
    use benchmarking;
-   insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID);
+   insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID, default);
 EOF`
 done
 
