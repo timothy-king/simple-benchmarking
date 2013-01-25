@@ -111,7 +111,7 @@ fi
 # storing the current job in the database
 SQL_OUT=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
    use benchmarking;
-   insert into Jobs VALUES(default, "$JOB_NAME", "$JOB_DESCRIPTION", $TIME_LIMIT, $MEM_LIMIT, $PROBLEM_SET, "$ARGS", default);
+   insert into Jobs VALUES(default, "$JOB_NAME", "$JOB_DESCRIPTION", $TIME_LIMIT, $MEM_LIMIT, $PROBLEM_SET, "$ARGS", default, "$BINARY", $Z3, $CVC4);
 EOF`
 
 # Getting job number
@@ -123,7 +123,7 @@ EOF`
 JOB_ID_STRING=($JOB_ID_STRING)
 JOB_ID=${JOB_ID_STRING[1]}
 
-echo "Running job $JOB_ID"
+echo "Adding to queue job $JOB_ID"
 
 # Getting problem paths
 PROBLEMS=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
@@ -143,50 +143,14 @@ PROBLEM_ARRAY=($PROBLEMS)
 for ((i=3; i<${#PROBLEM_ARRAY[@]}; i+=2)); # skipping the first values that are part of the header
 do
     PROBLEM_ID=${PROBLEM_ARRAY[`expr $i - 1`]}
-    PROBLEM_PATH=${PROBLEM_ARRAY[$i]}
-    echo "Running $PROBLEM_PATH..."
-
-    # error output log
-    ERR_LOG=$LOG_PATH$JOB_ID/$PROBLEM_ID.err
-    # output log 
-    OUT_LOG=$LOG_PATH$JOB_ID/$PROBLEM_ID.out
-    #runlimp log
-    RUNLIM_LOG=$LOG_PATH$JOB_ID/$PROBLEM_ID.runlim
-
-    # running the binary on the benchmark
-    $RUN_LIM -t $TIME_LIMIT -s $MEM_LIMIT -o $RUNLIM_LOG $BINARY $ARGS $PROBLEM_PATH 1> $OUT_LOG 2> $ERR_LOG
-
-    echo "ExitCode=$?" >> $RUNLIM_LOG
-
-    # store run times
-    RUN_TIME=`grep "\[runlim\] time:" $RUNLIM_LOG | sed 's/.*time:\s*//' | sed 's/\sseconds//' `
-    MEMORY=`grep "space:" $RUNLIM_LOG | sed 's/.*space:\s*//' | sed 's/\sMB//'`
-    EXIT_STATUS=`grep "ExitCode=" $RUNLIM_LOG | sed 's/ExitCode=//'`
-    RESULT=`head -1 $OUT_LOG`
-    echo "the result is $RESULT "
-    if [[ "$RESULT" != "sat" && "$RESULT" != "unsat" ]]; then
-	RESULT="unknown"
-    fi
-
-    # store job result
-    JOB_RESULT_ID_STR=`mysql -u $USER -p$PASSWORD -h localhost <<EOF
-   use benchmarking;
-   insert into JobResults VALUES(default, $JOB_ID, $PROBLEM_ID, $RUN_TIME, $MEMORY, "$RESULT", $EXIT_STATUS);
-   select MAX(id) from JobResults;
-EOF`
-
-    JOB_RESULT_ID_STR=($JOB_RESULT_ID_STR)
-    JOB_RESULT_ID=${JOB_RESULT_ID_STR[1]}
-    if [[ "$CVC4" == "true" ]]; then
-	echo `./collectStatsCvc4.py $JOB_RESULT_ID $ERR_LOG $USER $PASSWORD`
-    fi
-
-    if [[ "$Z3" == "true" ]]; then
-	# z3 prints statistics to regular output 
-	echo `./collectStatsZ3.py $JOB_RESULT_ID $OUT_LOG $USER $PASSWORD`
-    fi
-
     
-
+    # store job result
+   `mysql -u $USER -p$PASSWORD -h localhost <<EOF
+   use benchmarking;
+   insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID);
+EOF`
 done
 
+# starting the runner
+echo "Starting runner for job $JOB_ID..."
+./runner.sh $JOB_ID

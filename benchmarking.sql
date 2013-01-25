@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: benchmarking
 -- ------------------------------------------------------
--- Server version	5.5.28-1
+-- Server version	5.5.28-0ubuntu0.12.04.3
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -31,7 +31,7 @@ CREATE TABLE `JobResults` (
   `result` varchar(100) DEFAULT NULL,
   `exit_status` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7971 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7593 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,8 +50,11 @@ CREATE TABLE `Jobs` (
   `problem_set_id` int(11) NOT NULL,
   `arguments` varchar(500) DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `binary_path` varchar(150) NOT NULL,
+  `z3` tinyint(1) NOT NULL,
+  `cvc4` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -65,7 +68,7 @@ CREATE TABLE `ProblemSet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(500) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +83,7 @@ CREATE TABLE `ProblemSetToProblem` (
   `problem_set_id` int(11) NOT NULL,
   `problem_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2054 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1031 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +100,22 @@ CREATE TABLE `Problems` (
   `logic` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `res_index` (`expected_result`)
-) ENGINE=InnoDB AUTO_INCREMENT=34394 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=33760 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `Queue`
+--
+
+DROP TABLE IF EXISTS `Queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `job_id` int(11) NOT NULL,
+  `problem_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4905 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +134,7 @@ CREATE TABLE `ResultStats` (
   KEY `stat_id` (`stat_id`),
   KEY `job_result_id` (`job_result_id`),
   KEY `stat_value` (`stat_value`)
-) ENGINE=InnoDB AUTO_INCREMENT=921050 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=911510 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,7 +150,19 @@ CREATE TABLE `Stats` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_2` (`name`),
   KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=507733 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=498193 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `booltest`
+--
+
+DROP TABLE IF EXISTS `booltest`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `booltest` (
+  `val` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -144,4 +174,4 @@ CREATE TABLE `Stats` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-01-22 15:13:24
+-- Dump completed on 2013-01-24 21:24:00

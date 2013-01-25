@@ -79,7 +79,7 @@ $i = 0;
 $num_stats = mysql_numrows($stats);
 // table header 
 ?>
-<table border="1" cellpadding="5">
+<table class="sortable" border="1" cellpadding="5">
   <tr>
   <th> # </th>
   <th> Benchmark </th>

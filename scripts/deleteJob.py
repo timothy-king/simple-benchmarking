@@ -67,8 +67,13 @@ def deleteJob(cur, job_id):
     for jrid in jrids:
         deleteJobResult(cur, jrid)
     cur.execute('DELETE FROM Jobs WHERE Jobs.id = %s;', job_id)
+    deleteQueue(cur, job_id)
     print "deleting job id", job_id, "done"
 
+def deleteQueue(cur, job_id):
+    cur.execute('DELETE FROM Queue WHERE Queue.job_id = %s;', job_id)
+    print "deleting from Queue done"
+    
 
 job_id=int(sys.argv[1])
 
