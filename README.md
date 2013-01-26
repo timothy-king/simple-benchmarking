@@ -13,13 +13,22 @@ A) Setup:
   # ./configure
   # make
 
-B) Run jobs:
+B) Add jobs:
   # cd scripts
-  # ./run-job.sh -b <binary-path> -p <problem-set> -a <args> -t <time-limit> -m <memory-limit> -n <job-name> -d <job-description> [-c running cvc4 (used for stats)]
-  See example-run-job.sh for an example.
+  # ./add-job.sh -b <binary-path> -p <problem-set> -a <args> -t <time-limit> -m <memory-limit> -n <job-name> -d <job-description> [-c running cvc4 (used for stats)]
+  See example-add-job.sh for an example.
 
-C) Analyze
+C) Runners
+  # cd scripts
+  # ./runner.py <job id>
+
+D) Analyze
 1) Grab statistics in CSV (can be manipulated with R)
   # cd scripts
   # ./dumpCSV.py <Job number> [statistics file]
 2) Visualize using the web interface (coming)
+
+E) Misc. Database Management
+1) Reset the mysql queue using ./resetQueue.py
+2) Delete a job using ./deleteJob.py <job id>
+
