@@ -684,7 +684,7 @@ main (int argc, char **argv)
   real_time_limit = time_limit;
   space_limit = get_physical_mb ();	/* physical memory size */
 
-  sigxcpu_delay = 2*1000;               /* 2 seconds. */
+  sigxcpu_delay = 5*1000;               /* 5 seconds. */
   for (i = 1; i < argc; i++)
     {
       if (argv[i][0] == '-')
