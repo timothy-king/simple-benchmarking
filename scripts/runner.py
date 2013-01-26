@@ -55,8 +55,8 @@ def storeProblemResult(problem_id, run_time, memory, result, exit_status):
                        where job_id=%s and problem_id=%s;""",
                     (job_id, problem_id));
         probResults = cur.fetchall()
-        assert len(jobResults) == 1, "Failed to store job result: Job may already exist"
-        assert len(jobResults[0])== 1
+        assert len(probResults) == 1, "Failed to store problem result: Problem may already be in the table"
+        assert len(probResults[0])== 1
         problem_result_id = probResults[0][0]
 
         #remove from Queue
@@ -121,9 +121,6 @@ def grabTimeAndMemoryFromRunLimLog(runlim_log):
     runlim_log_file.close()
     assert run_time != None, "Failed to find runlim's running time"
     assert memory != None, "Failed to find runlim's memory usage"
-    if verbosity > 0:
-        print "Running time\t", run_time, "seconds"
-        print "Memory\t", memory, " MB"
     return run_time, memory
 
 def grabResultFromOutLog(out_log):
@@ -131,6 +128,7 @@ def grabResultFromOutLog(out_log):
     result = None
     for line in out_log_file:
         result = line
+    out_log_file.close()
 
     if result != None:
         result = result.strip()
@@ -156,6 +154,9 @@ def runProblem(p):
 
     (run_time, memory, result) = grabFromLogs(runlim_log, out_log)
 
+    print "Result", result,
+    print "in (", run_time, "seconds,", memory, " MB)"
+        
     job_result_id = storeProblemResult(problem_id, run_time, memory, result, exit_status)
     collectStats(job_result_id, err_log)
 

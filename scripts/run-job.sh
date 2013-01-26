@@ -125,32 +125,32 @@ JOB_ID=${JOB_ID_STRING[1]}
 
 echo "Adding to queue job $JOB_ID"
 
-# Getting problem paths
-PROBLEMS=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
-   use benchmarking;
-   select Problems.id, Problems.path FROM Problems INNER JOIN ProblemSetToProblem ON Problems.id=ProblemSetToProblem.problem_id WHERE ProblemSetToProblem.problem_set_id=$PROBLEM_SET;
-EOF`
-
 # setting up directory for outputting logs
 if [ ! -d "$LOG_PATH$JOB_ID" ]; then
     mkdir $LOG_PATH$JOB_ID
 fi
 
-# temporary file for runlim output
-TEMP=runlim_temp
-
-PROBLEM_ARRAY=($PROBLEMS)
-for ((i=3; i<${#PROBLEM_ARRAY[@]}; i+=2)); # skipping the first values that are part of the header
-do
-    PROBLEM_ID=${PROBLEM_ARRAY[`expr $i - 1`]}
-    
-    # store job result
-   `mysql -u $USER -p$PASSWORD -h localhost <<EOF
+# Inserting into the queue
+echo "Inserting problems for job $JOB_ID:"
+PROBLEMS=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
    use benchmarking;
-   insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID, default);
+   insert into Queue (job_id, problem_id)
+   select $JOB_ID, Problems.id FROM Problems INNER JOIN ProblemSetToProblem ON Problems.id=ProblemSetToProblem.problem_id WHERE ProblemSetToProblem.problem_set_id=$PROBLEM_SET;
 EOF`
-done
+echo "$PROBLEMS"
+
+# PROBLEM_ARRAY=($PROBLEMS)
+# for ((i=3; i<${#PROBLEM_ARRAY[@]}; i+=2)); # skipping the first values that are part of the header
+# do
+#     PROBLEM_ID=${PROBLEM_ARRAY[`expr $i - 1`]}
+    
+#     # store job result
+#    `mysql -u $USER -p$PASSWORD -h localhost <<EOF
+#    use benchmarking;
+#    insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID, default);
+# EOF`
+# done
 
 # starting the runner
 echo "Starting runner for job $JOB_ID..."
-./runner.sh $JOB_ID
+./runner.py $JOB_ID
