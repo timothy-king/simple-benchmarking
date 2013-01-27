@@ -6,26 +6,9 @@ import os
 import argparse
 import subprocess
 import re
+import benchmarking_utilities as bu
 
-USER_FILE="../config/user"
-PASSWORD_FILE="../config/password"
-LOG_PATH_FILE="../config/logpath"
-
-RUN_LIM="../runlim-sigxcpu/runlim"
-
-def echoFile(fileName):
-    try:
-        f = open(fileName, 'r');
-        contents = f.read()
-        return contents.strip()
-    except IOError:
-        sys.exit("Could not open " + fileName+". Make sure this exists and is readable.")
-
-server='localhost'
-user=echoFile(USER_FILE)
-password=echoFile(PASSWORD_FILE)
-log_path=echoFile(LOG_PATH_FILE)
-table="benchmarking"
+(server, user, password, table) = bu.loadConfiguration()
 
 con = mdb.connect(server, user, password, table);
 with con:

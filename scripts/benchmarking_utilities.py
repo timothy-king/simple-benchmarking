@@ -26,10 +26,6 @@ def loadLogPath():
 def genLogPath(log_path, job_id, problem_id, ext):
     return log_path+str(job_id)+"/"+str(problem_id)+ext
 
-def writeDelimLn(out, l):
-    out.write(string.join(l ,DELIM));
-    out.write('\n');
-
 
 def printJob(j):
     job_id = j[0]

@@ -2,12 +2,11 @@
 
 import MySQLdb as mdb
 import sys
-import string
 import datetime
 import argparse
 import benchmarking_utilities as bu
 
-parser = argparse.ArgumentParser(description='Summarize recent benchmarking jobs.')
+parser = argparse.ArgumentParser(description='Renames a job in the database.')
 parser.add_argument('jobid',type=int,
                    help='id of the job to rename', default=0)
 parser.add_argument('-d', '--description',type=str,

@@ -2,7 +2,6 @@
 
 import MySQLdb as mdb
 import sys
-import string
 import datetime
 import benchmarking_utilities as bu
 
