@@ -6,33 +6,18 @@ import os
 import argparse
 import subprocess
 import re
-
-USER_FILE="../config/user"
-PASSWORD_FILE="../config/password"
-LOG_PATH_FILE="../config/logpath"
+import benchmarking_utilities as bu
 
 RUN_LIM="../runlim-sigxcpu/runlim"
 
-def echoFile(fileName):
-    try:
-        f = open(fileName, 'r');
-        contents = f.read()
-        return contents.strip()
-    except IOError:
-        sys.exit("Could not open " + fileName+". Make sure this exists and is readable.")
-
+(server, user, password, table) = bu.loadConfiguration()
+log_path = bu.loadLogPath()
 
 parser = argparse.ArgumentParser(description='Run a job.')
 parser.add_argument('JobID', type=int, help='id of the job you want to work on')
 parser.add_argument('-v', '--verbosity', type=int,
                     help='how verbose the script should be', default=0)
 args = parser.parse_args()
-
-server='localhost'
-user=echoFile(USER_FILE)
-password=echoFile(PASSWORD_FILE)
-log_path=echoFile(LOG_PATH_FILE)
-table="benchmarking"
 job_id = args.JobID
 pid = os.getpid()
 
@@ -40,8 +25,6 @@ job_id = args.JobID
 verbosity = args.verbosity
 pid = os.getpid()
 
-def genLogPath(problem_id, ext):
-    return log_path+str(job_id)+"/"+str(problem_id)+ext
 
 def storeProblemResult(problem_id, run_time, memory, result, exit_status):
     problem_result_id=None
@@ -146,9 +129,9 @@ def runProblem(p):
     print "Running", problem_path, "..."
 
     # error output log
-    err_log=genLogPath(problem_id, ".err")
-    out_log=genLogPath(problem_id, ".out")
-    runlim_log=genLogPath(problem_id, ".rumlim")
+    err_log=bu.genLogPath(log_path, job_id, problem_id, ".err")
+    out_log=bu.genLogPath(log_path, job_id, problem_id, ".out")
+    runlim_log=bu.genLogPath(log_path, job_id, problem_id, ".rumlim")
 
     exit_status = runProcess(problem_id, problem_path, err_log, out_log, runlim_log)
 
@@ -156,7 +139,7 @@ def runProblem(p):
 
     print "Result", result,
     print "in (", run_time, "seconds,", memory, " MB)"
-        
+
     job_result_id = storeProblemResult(problem_id, run_time, memory, result, exit_status)
     collectStats(job_result_id, err_log)
 

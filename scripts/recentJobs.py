@@ -5,43 +5,26 @@ import sys
 import string
 import datetime
 import argparse
+import benchmarking_utilities as bu
 
+parser = argparse.ArgumentParser(description='Summarize recent benchmarking jobs.')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-l', '--list',type=int,metavar='N',
+                   help='number of recent jobs', default=0)
+group.add_argument('-d', '--days',type=int,metavar='D',
+                   help='number of days', default=1)
+group.add_argument('-H', '--hours',type=int,metavar='H',
+                   help='hours since time', default=0)
+group.add_argument('-s', '--since',type=str,metavar='TIME',
+                   help='search since time', default="")
+args = parser.parse_args()
 
-USER_FILE="../config/user"
-PASSWORD_FILE="../config/password"
+listN = args.list
+hoursH = args.hours
+daysD = args.days
+sinceTime = args.since
 
-
-def echoFile(fileName):
-    try:
-        f = open(fileName, 'r');
-        contents = f.read()
-        return contents.strip()
-    except IOError:
-        sys.exit("Could not open " + fileName+". Make sure this exists and is readable.")
-
-def writeDelimLn(out, l):
-    out.write(string.join(l ,DELIM));
-    out.write('\n');
-
-server='localhost'
-user=echoFile(USER_FILE)
-password=echoFile(PASSWORD_FILE)
-table="benchmarking"
-
-
-def printJob(j):
-    job_id = j[0]
-    name = j[1]
-    description = j[2]
-    time_limit = j[3]
-    memory_limit = j[4]
-    problem_set_id = j[5]
-    arguments = j[6]
-    timestamp = j[7]
-    print job_id, name, ";", description
-    print "  ", arguments
-    print "  ", timestamp.isoformat(), problem_set_id,
-    print time_limit, memory_limit
+(server, user, password, table) = bu.loadConfiguration()
 
 def daysBeforeString(day_count):
     today = datetime.date.today()
@@ -63,29 +46,12 @@ def selectKMostRecent(k):
     cur.execute('SELECT * from Jobs order by Jobs.timestamp DESC limit %s;', k)
     return cur.fetchall()
 
-parser = argparse.ArgumentParser(description='Summarize recent benchmarking jobs.')
-group = parser.add_mutually_exclusive_group()
-group.add_argument('-l', '--list',type=int,metavar='N',
-                   help='number of recent jobs', default=0)
-group.add_argument('-d', '--days',type=int,metavar='D',
-                   help='number of days', default=1)
-group.add_argument('-H', '--hours',type=int,metavar='H',
-                   help='hours since time', default=0)
-group.add_argument('-s', '--since',type=str,metavar='TIME',
-                   help='search since time', default="")
-args = parser.parse_args()
-
-listN = args.list
-hoursH = args.hours
-daysD = args.days
-sinceTime = args.since
-
-
 con = mdb.connect(server, user, password, table);
 with con:
     cur = con.cursor()
     jobs = None
     if listN > 0 :
+        print "Selecting", listN, "most recent jobs"
         jobs = selectKMostRecent(listN)
     else:
         if len(sinceTime) > 0:
@@ -94,8 +60,9 @@ with con:
             prev = hoursBeforeString(hoursH)
         else:
             prev = daysBeforeString(daysD)
+        print "Selecting jobs before:", prev
         jobs = selectJobsBefore(prev)
     for j in jobs:
-        printJob(j)
+        bu.printJob(j)
 
 con.close()
