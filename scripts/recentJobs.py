@@ -8,20 +8,22 @@ import benchmarking_utilities as bu
 
 parser = argparse.ArgumentParser(description='Summarize recent benchmarking jobs.')
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-l', '--list',type=int,metavar='N',
-                   help='number of recent jobs', default=0)
+group.add_argument('-n', type=int,metavar='N',
+                   help='number of recent jobs', default=None)
 group.add_argument('-d', '--days',type=int,metavar='D',
-                   help='number of days', default=1)
+                   help='number of days', default=None)
 group.add_argument('-H', '--hours',type=int,metavar='H',
-                   help='hours since time', default=0)
+                   help='hours since time', default=None)
 group.add_argument('-s', '--since',type=str,metavar='TIME',
-                   help='search since time', default="")
+                   help='search since time', default=None)
+group.add_argument('-l', '--list', nargs='+', type=int, default=None)
 args = parser.parse_args()
 
-listN = args.list
+recentN = args.n
 hoursH = args.hours
 daysD = args.days
 sinceTime = args.since
+listed = args.list
 
 (server, user, password, table) = bu.loadConfiguration()
 
@@ -49,18 +51,23 @@ con = mdb.connect(server, user, password, table);
 with con:
     cur = con.cursor()
     jobs = None
-    if listN > 0 :
-        print "Selecting", listN, "most recent jobs"
-        jobs = selectKMostRecent(listN)
-    else:
-        if len(sinceTime) > 0:
-            prev = sinceTime
-        elif hoursH > 0:
-            prev = hoursBeforeString(hoursH)
-        else:
-            prev = daysBeforeString(daysD)
+    prev = None
+    if recentN != None:
+        print "Selecting", recentN, "most recent jobs"
+        jobs = selectKMostRecent(recentN)
+    elif hoursH != None:
+        prev = hoursBeforeString(hoursH)
+    elif daysD != None:
+        prev = daysBeforeString(daysD)
+    elif sinceTime != None:
+        prev = sinceTime
+    elif listed != None:
+        jobs = [bu.selectJob(cur,jid) for jid in listed]
+
+    if prev != None:
         print "Selecting jobs before:", prev
         jobs = selectJobsBefore(prev)
+
     for j in jobs:
         bu.printJob(j)
 
