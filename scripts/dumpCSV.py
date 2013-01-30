@@ -88,14 +88,19 @@ def statValuesForCSV(cur, job_number, job_result_id, stat_ids):
     return stat_values
 
 def dumpCSVForJob(cur, job_number, stat_ids, stat_names):
-    outfile_name=str(job_number) + '.csv'
-    outfile = open(outfile_name, 'w')
-
-    writeDelimLn(outfile, CSVHeaders(stat_names));
-
     job_result_ids = bu.jobResultIds(cur, job_number)
+    stats_for_job_results = []
     for job_result_id in job_result_ids :
         stat_values = statValuesForCSV(cur, job_number, job_result_id, stat_ids)
+        stats_for_job_results.append( stat_values)
+
+    #Sort by problem_id
+    stats_for_job_results.sort(cmp = lambda x,y:cmp(x[1],y[1]))
+
+    outfile_name=str(job_number) + '.csv'
+    outfile = open(outfile_name, 'w')
+    writeDelimLn(outfile, CSVHeaders(stat_names));
+    for stat_values in stats_for_job_results:
         writeDelimLn(outfile, stat_values)
     outfile.close()
 
