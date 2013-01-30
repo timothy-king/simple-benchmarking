@@ -32,7 +32,7 @@ def storeProblemResult(problem_id, run_time, memory, result, exit_status):
     with con:
         cur = con.cursor()
         cur.execute("""insert into JobResults
-                    VALUES(default, %s, %s, %s, %s, "%s", %s);""",
+                    VALUES(default, %s, %s, %s, %s, %s, %s);""",
                     (job_id, problem_id, run_time, memory, result, exit_status))
         cur.execute("""select id from JobResults
                        where job_id=%s and problem_id=%s;""",
