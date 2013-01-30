@@ -67,12 +67,18 @@ def confirmJobResult(cur, job_id, problem_id, job_result_id):
     job = selectJob(cur, job_id)
     printJob(job)
 
-    cur.execute('SELECT path from Problems where id = %s;', problem_id)
-    problem_path = (cur.fetchall())[0][0]
+    problem_path = getProblemPath(cur, problem_id)
     print "Problem:", problem_path
     print "job_result_id:", job_result_id
     cand_id = input("Reenter job_result_id to confirm:")
     return cand_id == job_result_id
+
+def getProblemPath(cur, problem_id):
+    cur.execute('SELECT path from Problems where id = %s;', problem_id)
+    res = cur.fetchall()
+    assert len(res) == 1
+    assert len(res[0]) == 1
+    return res[0][0]
 
 
 def deleteJobResult(cur, jrid):

@@ -51,7 +51,7 @@ def selectStatIdsFromFile(cur, statistics_file):
 
 def CSVHeaders(stat_names):
     STATS_IN_JOB_RESULT=['JobId', 'BenchmarkId', 'RunTime', 'Memory',
-                         'Result', 'ExitStatus'];
+                         'Result', 'ExitStatus', 'BenchmarkPath'];
     return STATS_IN_JOB_RESULT + stat_names
 
 def statValuesForCSV(job_number, job_result_id, stat_ids):
@@ -66,7 +66,10 @@ def statValuesForCSV(job_number, job_result_id, stat_ids):
 
     runtime_results = cur.fetchall()
     assert len(runtime_results) == 1
+    assert len(runtime_results[0]) == 5
+    problem_id =runtime_results[0][0]
     runtime_result_strings = [str(runtime_results[0][j]) for j in range(5)]
+    runtime_result_strings.append(bu.getProblemPath(cur, problem_id))
     stat_values.extend(runtime_result_strings);
 
     cur.execute("""SELECT stat_id, stat_value
