@@ -13,16 +13,13 @@ NAString='NA'
 (server, user, password, table) = bu.loadConfiguration()
 
 parser = argparse.ArgumentParser(description='Prints a CSV file for a job.')
-parser.add_argument('jobid',type=int,
-                    help='id of the job to print')
+parser.add_argument('jobids',type=int,nargs='+',
+                    help='list of ids of the jobs to print')
 parser.add_argument('-s','--statsfile',type=str,default=None,
                     help='file containing statistics to print')
 args = parser.parse_args()
-
-
-job_number= args.jobid
 statistics_file=args.statsfile
-
+job_ids= args.jobids
 
 def writeDelimLn(out, l):
     out.write(string.join(l ,DELIM));
@@ -54,7 +51,7 @@ def CSVHeaders(stat_names):
                          'Result', 'ExitStatus', 'BenchmarkPath'];
     return STATS_IN_JOB_RESULT + stat_names
 
-def statValuesForCSV(job_number, job_result_id, stat_ids):
+def statValuesForCSV(cur, job_number, job_result_id, stat_ids):
     stat_values = []
     # for each problem in this job retrieve the stats
     stat_values.append(str(job_number))
@@ -90,9 +87,19 @@ def statValuesForCSV(job_number, job_result_id, stat_ids):
         stat_values.append(stat_value)
     return stat_values
 
+def dumpCSVForJob(cur, job_number, stat_ids, stat_names):
+    outfile_name=str(job_number) + '.csv'
+    outfile = open(outfile_name, 'w')
 
-outfile_name=str(job_number) + '.csv'
-outfile = open(outfile_name, 'w')
+    writeDelimLn(outfile, CSVHeaders(stat_names));
+
+    job_result_ids = bu.jobResultIds(cur, job_number)
+    for job_result_id in job_result_ids :
+        stat_values = statValuesForCSV(cur, job_number, job_result_id, stat_ids)
+        writeDelimLn(outfile, stat_values)
+    outfile.close()
+
+
 con = mdb.connect(server, user, password, table);
 with con:
     cur = con.cursor()
@@ -106,12 +113,8 @@ with con:
     assert stat_ids != None
     assert stat_names != None
 
-    writeDelimLn(outfile, CSVHeaders(stat_names));
-
-    job_result_ids = bu.jobResultIds(cur, job_number)
-    for job_result_id in job_result_ids :
-        stat_values = statValuesForCSV(job_number, job_result_id, stat_ids)
-        writeDelimLn(outfile, stat_values)
-
-outfile.close()
+    for job_id in job_ids:
+        print "Processing", job_id,
+        dumpCSVForJob(cur, job_id, stat_ids, stat_names)
+        print "[done]"
 con.close()
