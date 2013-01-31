@@ -73,7 +73,7 @@ def runProcess(problem_id, problem_path, err_log, out_log, runlim_log):
 
     run_args = [RUN_LIM, "-t", str(time_limit),
                 "-s", str(mem_limit), "-o", runlim_log,
-                binary_path, args, problem_path]
+                binary_path]+ args.split() + [problem_path]
 
     if verbosity > 0:
         print "Running the exact command:", ' '.join(run_args)
