@@ -56,6 +56,17 @@ def selectJob(cur, job_id):
     assert(jobs[0][0] == job_id)
     return jobs[0]
 
+def jobLike(cur, search):
+    cur.execute("""SELECT
+                id, name, description, time_limit, memory_limit,
+                problem_set_id, arguments, timestamp, binary_path, z3, cvc4
+                from Jobs
+                where Jobs.name like %s or Jobs.description like %s;""",
+                ('%'+search+'%', '%'+search+'%'))
+    res = cur.fetchall()
+    print res
+    return res
+
 def printJobWithId(cur, job_id):
     printJob(selectJob(cur, job_id))
 

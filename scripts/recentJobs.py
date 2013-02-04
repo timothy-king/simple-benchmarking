@@ -17,6 +17,8 @@ group.add_argument('-H', '--hours',type=int,metavar='H',
 group.add_argument('-s', '--since',type=str,metavar='TIME',
                    help='search since time', default=None)
 group.add_argument('-l', '--list', nargs='+', type=int, default=None)
+group.add_argument('--search', type=str, default=None)
+
 args = parser.parse_args()
 
 recentN = args.n
@@ -24,6 +26,7 @@ hoursH = args.hours
 daysD = args.days
 sinceTime = args.since
 listed = args.list
+search = args.search
 
 (server, user, password, database) = bu.loadConfiguration()
 
@@ -63,6 +66,10 @@ with con:
         prev = sinceTime
     elif listed != None:
         jobs = [bu.selectJob(cur,jid) for jid in listed]
+    elif search != None:
+        jobs = bu.jobLike(cur, search)
+    else:
+        prev = daysBeforeString(1)
 
     if prev != None:
         print "Selecting jobs before:", prev
