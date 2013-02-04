@@ -19,10 +19,13 @@ def printQueueSize(cur):
     out = ""
     out += "Queue has "+ str(getQueueSize(cur))+ " total elements\n"
     out += "-----------\n"
-    cur.execute("""SELECT job_id,COUNT(id) from Queue;""")
-    per_job = cur.fetchall()
-    for (job_id,count) in per_job:
-        out += "Job "+ str(job_id) +" has "+ str(count)+"\n"
+    cur.execute("""SELECT distinct(job_id) from Queue;""")
+    job_ids = cur.fetchall()
+    for (job_id) in job_ids:
+        cur.execute("""SELECT count(*) from Queue where job_id = %s;""",
+                    (job_id))
+        count = cur.fetchall()[0][0]
+        out += "Job "+ str(job_id[0]) +" has "+ str(count)+"\n"
     return out
 
 def queueSize():
