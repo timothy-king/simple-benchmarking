@@ -93,6 +93,14 @@ def getProblemPath(cur, problem_id):
     assert len(res[0]) == 1
     return res[0][0]
 
+def getExpectedResult(cur, problem_id):
+    cur.execute("""SELECT expected_result
+                from Problems where id = %s;""",
+                (problem_id))
+    res = cur.fetchall()
+    assert len(res) == 1
+    assert len(res[0]) == 1
+    return res[0][0]
 
 def deleteJobResult(cur, jrid):
     print "\t","Deleting job result id", jrid
