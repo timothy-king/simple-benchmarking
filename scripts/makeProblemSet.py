@@ -10,7 +10,7 @@ DELIM=','
 NAString='NA'
 
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 parser = argparse.ArgumentParser(description='Creates a problem set consisting of the benchmarks in the input file.')
 parser.add_argument('-p','--problemset',type=int,default=None,
@@ -46,7 +46,7 @@ def addBenchmarksToProblemSet(cur, pb_set, bench_ids, bench_paths):
         print "Adding to problem set ", pb_set, " benchmark ", bench_path
         cur.execute("INSERT INTO ProblemSetToProblem VALUES(DEFAULT, %s, %s);", (pb_set, bench_id))
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
 

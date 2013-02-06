@@ -22,7 +22,7 @@ description = args.description
 name = args.name
 binary_path = args.binary
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 def setDescription(cur, job_id, description):
     cur.execute("""UPDATE Jobs
@@ -42,7 +42,7 @@ def setBinaryPath(cur, job_id, name):
                    WHERE Jobs.id = %s;""",
                 (name, job_id))
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     if description == "" and name == "" and binary_path == "":

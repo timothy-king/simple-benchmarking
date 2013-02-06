@@ -11,6 +11,8 @@ MEM_LIMIT=1500
 LOG_PATH=`cat ../config/logpath`
 USER=`cat ../config/user`
 PASSWORD=`cat ../config/password`
+HOST=`cat ../config/host`
+DATABASE=`cat ../config/database`
 RUN_LIM="../runlim-sigxcpu/runlim"
 
 CVC4=false
@@ -109,13 +111,13 @@ if [[ $JOB_NAME = "" ]]; then
 fi
 
 # storing the current job in the database
-SQL_OUT=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+SQL_OUT=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
    use benchmarking;
    insert into Jobs VALUES(default, "$JOB_NAME", "$JOB_DESCRIPTION", $TIME_LIMIT, $MEM_LIMIT, $PROBLEM_SET, "$ARGS", default, "$BINARY", $Z3, $CVC4);
 EOF`
 
 # Getting job number
-JOB_ID_STRING=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+JOB_ID_STRING=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
    use benchmarking;
    select MAX(id) from Jobs; 
 EOF`
@@ -132,7 +134,7 @@ fi
 
 # Inserting into the queue
 echo "Inserting problems for job $JOB_ID:"
-PROBLEMS=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+PROBLEMS=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
    use benchmarking;
    insert into Queue (job_id, problem_id)
    select $JOB_ID, Problems.id FROM Problems INNER JOIN ProblemSetToProblem ON Problems.id=ProblemSetToProblem.problem_id WHERE ProblemSetToProblem.problem_set_id=$PROBLEM_SET;
@@ -145,7 +147,7 @@ echo "$PROBLEMS"
 #     PROBLEM_ID=${PROBLEM_ARRAY[`expr $i - 1`]}
     
 #     # store job result
-#    `mysql -u $USER -p$PASSWORD -h localhost <<EOF
+#    `mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
 #    use benchmarking;
 #    insert into Queue VALUES(default, $JOB_ID, $PROBLEM_ID, default);
 # EOF`

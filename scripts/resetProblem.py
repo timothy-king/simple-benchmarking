@@ -8,7 +8,7 @@ import benchmarking_utilities as bu
 
 job_id=int(sys.argv[1])
 problem_id=int(sys.argv[2])
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 def getResultID(cur, job_id, problem_id):
     cur.execute("""select id from JobResults
@@ -26,7 +26,7 @@ def addBackToQueue(cur, job_id, problem_id):
     print cur.fetchall()
 
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     job_result_id = getResultID(cur, job_id, problem_id)

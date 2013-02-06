@@ -5,6 +5,8 @@ USAGE="Usage: $0 -d <benchmarks-dir> -l <logic>"
 
 USER=`cat ../config/user`
 PASSWORD=`cat ../config/password`
+HOST=`cat ../config/host`
+DATABASE=`cat ../config/database`
 
 # parsing options
 while getopts "d:l:" opt; do
@@ -47,7 +49,7 @@ for FILE in $BENCHMARKS; do
     fi
     echo "file is $FILE with status: $STATUS and logic $LOGIC"
     # inserting into sql database
-    SQL_OUT=`mysql -h localhost -u $USER -p$PASSWORD <<EOF
+    SQL_OUT=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
     use benchmarking;
     insert into Problems VALUES(default, '$FILE', '$STATUS', '$LOGIC');
 EOF`

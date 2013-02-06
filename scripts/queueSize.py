@@ -9,7 +9,7 @@ import re
 import time
 import benchmarking_utilities as bu
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 def getQueueSize(cur):
     cur.execute("""SELECT COUNT(*) from Queue;""")
@@ -26,7 +26,7 @@ def printQueueSize(cur):
     return out
 
 def queueSize():
-    con = mdb.connect(server, user, password, table);
+    con = mdb.connect(server, user, password, database);
     with con:
         cur = con.cursor()
         prevQueueSize = getQueueSize(cur)

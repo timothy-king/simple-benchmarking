@@ -8,9 +8,9 @@ import subprocess
 import re
 import benchmarking_utilities as bu
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     cur.execute("""UPDATE Queue set runner_pid=NULL;""")

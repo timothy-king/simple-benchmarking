@@ -10,7 +10,7 @@ import benchmarking_utilities as bu
 
 RUN_LIM="../runlim-sigxcpu/runlim"
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 log_path = bu.loadLogPath()
 
 parser = argparse.ArgumentParser(description='Run a job.')
@@ -28,7 +28,7 @@ pid = os.getpid()
 
 def storeProblemResult(problem_id, run_time, memory, result, exit_status):
     problem_result_id=None
-    con = mdb.connect(server, user, password, table);
+    con = mdb.connect(server, user, password, database);
     with con:
         cur = con.cursor()
         cur.execute("""insert into JobResults
@@ -38,7 +38,7 @@ def storeProblemResult(problem_id, run_time, memory, result, exit_status):
                        where job_id=%s and problem_id=%s;""",
                     (job_id, problem_id));
         probResults = cur.fetchall()
-        assert len(probResults) == 1, "Failed to store problem result: Problem may already be in the table"
+        assert len(probResults) == 1, "Failed to store problem result: Problem may already be in the database"
         assert len(probResults[0])== 1
         problem_result_id = probResults[0][0]
 
@@ -55,14 +55,14 @@ def storeProblemResult(problem_id, run_time, memory, result, exit_status):
 def collectStats(job_result_id, err_log):
     if cvc4 == 1:
         csCvc4Args = ["./collectStatsCvc4.py",
-                      str(job_result_id), err_log, user, password]
+                      str(job_result_id), err_log, server, user, password, database]
         if verbosity > 0:
             print "collecting cvc4 stats with the command:", ' '.join(csCvc4Args)
         print subprocess.check_output(csCvc4Args)
 
     if z3 == 1:
         z3Cvc4Args = ["./collectStatsZ3.py",
-                      str(job_result_id), err_log, user, password]
+                      str(job_result_id), err_log, server, user, password, database]
         if verbosity > 0:
             print "collecting z3 stats with the command:", ' '.join(z3Cvc4Args)
         print subprocess.check_output(z3Cvc4Args)
@@ -145,7 +145,7 @@ def runProblem(p):
 
 
 def popQueue():
-    con = mdb.connect(server, user, password, table);
+    con = mdb.connect(server, user, password, database);
     emp, problem = None, None
     with con:
         cur = con.cursor()
@@ -178,7 +178,7 @@ def popQueue():
 # Grab globals for job
 print "Running job", job_id, "with process id", pid
 (time_limit, mem_limit, binary_path, cvc4, z3, args) = (None, None, None, None, None, None)
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     cur.execute("""SELECT

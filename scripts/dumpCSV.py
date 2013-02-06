@@ -10,7 +10,7 @@ DELIM=','
 NAString='NA'
 
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 parser = argparse.ArgumentParser(description='Prints a CSV file for a job.')
 parser.add_argument('jobids',type=int,nargs='+',
@@ -105,7 +105,7 @@ def dumpCSVForJob(cur, job_number, stat_ids, stat_names):
     outfile.close()
 
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
 

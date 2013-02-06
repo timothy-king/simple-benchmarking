@@ -78,9 +78,9 @@ def createPath(path):
     if not os.path.isdir(path):
         os.mkdir(path)
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 logPath = bu.loadLogPath()
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     job_id = addJob(cur, job_name, description, time_limit, memory_limit,
