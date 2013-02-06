@@ -8,6 +8,7 @@ A. Setup:
     mysql -uuser -ppass < benchmarking_structure.sql
 
 3. Populate table with benchmarks directory (recursive).
+
     # cd scripts
     # add-benchmarks.sh $DIRECTORY $LOGIC
 
@@ -16,6 +17,7 @@ A. Setup:
 5. Create one line text files in config/{logpath,password,user} containing path for logs, mysql password and mysql user. 
 
 6. Compile runlim
+
     # cd runlim-sigxcpu
     # ./configure
     # make
