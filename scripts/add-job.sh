@@ -18,8 +18,10 @@ RUN_LIM="../runlim-sigxcpu/runlim"
 CVC4=false
 Z3=false
 
+START_RUNNER=true
+
 # parsing options
-while getopts "zcp:b:a:t:m:d:n:" opt; do
+while getopts "zcp:b:a:t:m:d:n:r:" opt; do
     case $opt in
 	c)
 	    CVC4=true;
@@ -75,6 +77,9 @@ while getopts "zcp:b:a:t:m:d:n:" opt; do
 	    ;;
 	d)
 	    JOB_DESCRIPTION=$OPTARG
+	    ;;
+	r)
+	    START_RUNNER=false
 	    ;;
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
@@ -150,5 +155,9 @@ echo "$PROBLEMS"
 # done
 
 # starting the runner
-echo "Starting runner for job $JOB_ID..."
-./runner.py $JOB_ID
+if [ "$START_RUNNER" = "true" ]; then
+  echo "Starting runner for job $JOB_ID..."
+  ./runner.py $JOB_ID
+else
+  echo "Not starting the runner"
+fi

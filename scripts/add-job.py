@@ -27,8 +27,10 @@ group.add_argument('-c', '--cvc4', help='use stat collector for cvc4',
                    action="store_true")
 group.add_argument('-z', '--z3', help='use stat collector for z3',
                    action="store_true")
+parser.add_argument('--manual-start', help='don\'t start the runner automatically',
+                   action="store_true")
 parser.add_argument('-a', '--arguments', nargs=argparse.REMAINDER,
-                    help='command line arguments for binary')
+                     help='command line arguments for binary')
 args = parser.parse_args()
 
 binary_path = args.binary
@@ -45,7 +47,8 @@ description = args.description
 cvc4 = args.cvc4
 z3 = args.z3
 assert not (cvc4 and z3), "Cannot collect stats for both z3 and cvc4"
-
+auto_start = not(args.manual_start)
+print "auto_start: ", auto_start
 
 
 def addJob(cur, job_name, description, time_limit, memory_limit,
@@ -96,5 +99,8 @@ con.close()
 
 
 # starting the runner
-print "Starting runner for job", job_id, "..."
-subprocess.call(["./runner.py", str(job_id)])
+if auto_start:
+    print "Starting runner for job", job_id, "..."
+    subprocess.call(["./runner.py", str(job_id)])
+else:
+    print "Start a runner with job ID", job_id

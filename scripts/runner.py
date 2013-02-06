@@ -7,6 +7,7 @@ import argparse
 import subprocess
 import re
 import benchmarking_utilities as bu
+import platform, hashlib
 
 RUN_LIM="../runlim-sigxcpu/runlim"
 
@@ -18,12 +19,13 @@ parser.add_argument('JobID', type=int, help='id of the job you want to work on')
 parser.add_argument('-v', '--verbosity', type=int,
                     help='how verbose the script should be', default=0)
 args = parser.parse_args()
-job_id = args.JobID
-pid = os.getpid()
 
 job_id = args.JobID
 verbosity = args.verbosity
+
+# PID : combination of both system name and current process ID
 pid = os.getpid()
+pid += (int(hashlib.md5(platform.node()).hexdigest(), 16) % 10000) * 100000
 
 
 def storeProblemResult(problem_id, run_time, memory, result, exit_status):
