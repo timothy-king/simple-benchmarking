@@ -1,9 +1,3 @@
-expr::ExprManager::EQUAL
-expr::ExprManager::ITE
-expr::ExprManager::NOT
-expr::ExprManager::SELECT
-expr::ExprManager::STORE
-expr::ExprManager::VARIABLE:Parameterized type
 sat::clauses_literals
 sat::conflicts
 sat::decisions
@@ -13,6 +7,3 @@ sat::propagations
 sat::rnd_decisions
 sat::starts
 sat::tot_literals
-driver::filename
-driver::sat/unsat
-driver::totalTime
