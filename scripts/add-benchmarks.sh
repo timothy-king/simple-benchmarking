@@ -50,7 +50,6 @@ for FILE in $BENCHMARKS; do
     echo "file is $FILE with status: $STATUS and logic $LOGIC"
     # inserting into sql database
     SQL_OUT=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
-    use benchmarking;
     insert into Problems VALUES(default, '$FILE', '$STATUS', '$LOGIC');
 EOF`
 done
