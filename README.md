@@ -12,7 +12,7 @@ A. Setup:
     # cd scripts
     # add-benchmarks.sh $DIRECTORY $LOGIC
 
-4. Create problem set (pure sql atm sorry)
+4. Create problem set (see scripts/makeProblemSet.py for details)
 
 5. Create one line text files in config/{logpath,password,user,host,database} containing path for logs, mysql password and mysql user. 
     ('database' can be empty, in which case mysql which use the default database. 'host' should be 'localhost' if using locally)
