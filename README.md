@@ -8,6 +8,7 @@ A. Setup:
     mysql -uuser -ppass < benchmarking_structure.sql
 
 3. Populate table with benchmarks directory (recursive).
+
     # cd scripts
     # add-benchmarks.sh $DIRECTORY $LOGIC
 
@@ -17,6 +18,7 @@ A. Setup:
     ('database' can be empty, in which case mysql which use the default database. 'host' should be 'localhost' if using locally)
 
 6. Compile runlim
+
     # cd runlim-sigxcpu
     # ./configure
     # make
