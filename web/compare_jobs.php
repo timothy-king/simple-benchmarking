@@ -21,7 +21,7 @@ $job=$_GET['job'];
 $xjob = $job;
 $yjob = $reference_job; 
 function generatePlot($xjob, $yjob) {
-  // FIXME: nobody removes the temporary files 
+  // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
   $js_map_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
   $js_code = shell_exec('../scripts/generateGnuPlotCommand.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');

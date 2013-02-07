@@ -1,7 +1,7 @@
 A simple MySQL based benchmarking setup and scripts.
 
 A) Setup:
-1) Install and configure mysql, python, php, apache, and mysql+php+apache.
+1) Install and configure mysql, python, php, apache, mysql+php+apache and gnuplot 4.6 or higher.
 2) mysql -uuser -ppass < benchmarking_structure.sql
 3) Populate table with benchmarks directory (recursive).
   # cd scripts
