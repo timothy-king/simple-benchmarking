@@ -8,21 +8,13 @@
 
    <?php
 
-$user_file="../config/user";
-$password_file="../config/password";
-
-$user=trim(file_get_contents($user_file));
-$password=trim(file_get_contents($password_file));
-
-$user=trim(file_get_contents("../config/user"));
-$password=trim(file_get_contents("../config/password"));
-$database="benchmarking";
+include_once "config.php";
 
 
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
    
-mysql_connect("localhost",$user,$password);
+mysql_connect($server,$user,$password);
 @mysql_select_db($database) or die( "Unable to select database");
 
 // getting reference job information 

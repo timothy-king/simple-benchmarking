@@ -3,6 +3,8 @@ import MySQLdb as mdb
 
 USER_FILE="../config/user"
 PASSWORD_FILE="../config/password"
+HOST_FILE="../config/host"
+DATABASE_FILE="../config/database"
 LOG_PATH_FILE="../config/logpath"
 
 def echoFile(fileName):
@@ -14,11 +16,11 @@ def echoFile(fileName):
         sys.exit("Could not open " + fileName+". Make sure this exists and is readable.")
 
 def loadConfiguration():
-    server='localhost'
+    server=echoFile(HOST_FILE)
     user=echoFile(USER_FILE)
     password=echoFile(PASSWORD_FILE)
-    table="benchmarking"
-    return (server, user, password, table)
+    database=echoFile(DATABASE_FILE)
+    return (server, user, password, database)
 
 def loadLogPath():
     return echoFile(LOG_PATH_FILE)

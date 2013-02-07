@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import MySQLdb as mdb
 import sys
@@ -7,7 +7,7 @@ import string
 import benchmarking_utilities as bu
 
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 parser = argparse.ArgumentParser(description='Generates a scatter plot comparing two jobs.')
 parser.add_argument('-xj', '--xjob',type=int,
@@ -186,7 +186,7 @@ def gnuPlot(script_file, dat_file, color, family) :
     script_file.write("\"" + dat_file + "\" using 1:2 with p pt 9 pointsize 1 linecolor " + str(color) + " title \"" + family + "\", ")
 
     
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     results = selectAllResult(cur, xjob, yjob, xfield, yfield)

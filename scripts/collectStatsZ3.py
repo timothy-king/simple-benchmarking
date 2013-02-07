@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import MySQLdb as mdb
 import sys
@@ -6,8 +6,10 @@ import sys
 
 result_id = int(sys.argv[1])
 stat_file = sys.argv[2]
-user = sys.argv[3]
-password = sys.argv[4]
+server = sys.argv[3]
+user = sys.argv[4]
+password = sys.argv[5]
+database = sys.argv[6]
 
 def isStatisticLine(line) :
     if (not (any (line.startswith(x) for x in ["(:", " :"]))) :
@@ -30,7 +32,7 @@ def skipError(line):
 
     return False
 
-con = mdb.connect('localhost', user, password, 'benchmarking');
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
      # read statistics
