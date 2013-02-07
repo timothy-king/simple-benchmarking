@@ -1,12 +1,83 @@
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+   
 <script src="sorttable.js"></script>
-   <link href="style.css" rel="stylesheet" type="text/css" media="screen" />
-   </head>
-   <body>
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
 
+   <!--[if IE]><script type="text/javascript" src="excanvas.js"></script><![endif]-->
+<script src="js/canvastext.js"></script>
+<script src="js/gnuplot_common.js"></script>
+<script src="js/gnuplot_mouse.js"></script>
+<script src="get_benchmark_name.js" type="text/javascript"> </script>
 
-   <?php
+<link type="text/css" href="js/gnuplot_mouse.css" rel="stylesheet">
+
+<?php
+   
+$reference_job=$_GET['reference'];
+$job=$_GET['job'];
+   
+$xjob = $job;
+$yjob = $reference_job; 
+function generatePlot($xjob, $yjob) {
+  // FIXME: nobody removes the temporary files 
+  $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
+  $js_map_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
+  $js_code = shell_exec('../scripts/generateGnuPlotCommand.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');
+  $js_map_code = file_get_contents($js_map_file); 
+  echo $js_code;
+  echo $js_map_code;    
+  shell_exec('rm $temp_file'); 
+}
+echo "<script type=\"text/javascript\"> ";
+generatePlot($xjob, $yjob); 
+echo "</script>";
+?>
+
+</head>
+
+<body onload="gnuplot_canvas(); gnuplot.init(); benchmarkInit(); " oncontextmenu="return false;">
+
+<div class="gnuplot">
+<table class="mbleft">
+<tr><td class="mousebox">
+<table class="mousebox" border=0>
+  <tr><td class="mousebox">
+    <table class="mousebox" id="gnuplot_mousebox" border=0>
+    <tr><td class="mbh"></td></tr>
+    <tr><td class="mbh">
+      <table class="mousebox">
+	<tr>
+	  <td class="icon"></td>
+	  <td class="icon" onclick=gnuplot.toggle_grid><img src="js/grid.png" id="gnuplot_grid_icon" class="icon-image" alt="#" title="toggle grid"></td>
+	  <td class="icon" onclick=gnuplot.unzoom><img src="js/previouszoom.png" id="gnuplot_unzoom_icon" class="icon-image" alt="unzoom" title="unzoom"></td>
+	  <td class="icon" onclick=gnuplot.rezoom><img src="js/nextzoom.png" id="gnuplot_rezoom_icon" class="icon-image" alt="rezoom" title="rezoom"></td>
+	  <td class="icon" onclick=gnuplot.toggle_zoom_text><img src="js/textzoom.png" id="gnuplot_textzoom_icon" class="icon-image" alt="zoom text" title="zoom text with plot"></td>
+	  <td class="icon" onclick=gnuplot.popup_help()><img src="js/help.png" id="gnuplot_help_icon" class="icon-image" alt="?" title="help"></td>
+	</tr>
+      </table>
+  </td></tr>
+</table></td></tr><tr><td class="mousebox">
+<table class="mousebox" id="gnuplot_mousebox" border=1>
+<tr> <td class="mb0">x&nbsp;</td> <td class="mb1"><span id="gnuplot_canvas_x">&nbsp;</span></td> </tr>
+<tr> <td class="mb0">y&nbsp;</td> <td class="mb1"><span id="gnuplot_canvas_y">&nbsp;</span></td> </tr>
+<tr> <td class="mb0">benchmark&nbsp;</td> <td class="mb1"><span id="gnuplot_canvas_benchmark">&nbsp;</span></td> </tr>
+</table></td></tr>
+</table>
+</td>
+  
+<table class="plot">
+<tr><td>
+    <canvas id="gnuplot_canvas" width="800" height="600" tabindex="0">
+	Sorry, your browser seems not to support the HTML 5 canvas element
+    </canvas>
+</td></tr>
+</table>
+</div>
+   
+
+<?php
 
 $user_file="../config/user";
 $password_file="../config/password";
@@ -17,11 +88,7 @@ $password=trim(file_get_contents($password_file));
 $user=trim(file_get_contents("../config/user"));
 $password=trim(file_get_contents("../config/password"));
 $database="benchmarking";
-
-
-$reference_job=$_GET['reference'];
-$job=$_GET['job'];
-   
+ 
 mysql_connect("localhost",$user,$password);
 @mysql_select_db($database) or die( "Unable to select database");
 
@@ -95,7 +162,7 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   // getting job results
 
-  $query="SELECT * from JobResults where job_id=$job";
+$query="SELECT * from JobResults where job_id=$job";
 $job_result=mysql_query($query);
 
 $i=0;
