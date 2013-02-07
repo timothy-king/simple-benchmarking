@@ -47,11 +47,8 @@ for FILE in $BENCHMARKS; do
     else
 	STATUS="unknown"
     fi
-    echo "file is $FILE with status: $STATUS and logic $LOGIC"
-    # inserting into sql database
-    SQL_OUT=`mysql -h $HOST -u $USER -p$PASSWORD $DATABASE <<EOF
+    echo "file is $FILE with status: $STATUS and logic $LOGIC" 1>&2
+    cat <<EOF 
     insert into Problems VALUES(default, '$FILE', '$STATUS', '$LOGIC');
-EOF`
-done
-
-
+EOF
+done | mysql -h $HOST -u $USER -p$PASSWORD $DATABASE
