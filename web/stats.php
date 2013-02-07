@@ -8,12 +8,8 @@
 
 
    <?php
-$user_file="../config/user";
-$password_file="../config/password";
 
-$user=trim(file_get_contents($user_file));
-$password=trim(file_get_contents($password_file));
-$database="benchmarking";
+include_once "config.php";
 
 $statistic=$_GET['statistic'];
 $statistic=mysql_real_escape_string($statistic); 
@@ -24,7 +20,7 @@ $statistic=str_replace(', ', '" OR name LIKE "', $statistic);
 
 $job=$_GET['job'];
        
-mysql_connect("localhost",$user,$password);
+mysql_connect($server,$user,$password);
 @mysql_select_db($database) or die( "Unable to select database");
 
 // getting job information 
