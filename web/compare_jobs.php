@@ -14,7 +14,8 @@
 <link type="text/css" href="js/gnuplot_mouse.css" rel="stylesheet">
 
 <?php
-   
+include_once "config.php";   
+
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
    
@@ -79,17 +80,7 @@ echo "</script>";
 
 <?php
 
-$user_file="../config/user";
-$password_file="../config/password";
-
-$user=trim(file_get_contents($user_file));
-$password=trim(file_get_contents($password_file));
-
-$user=trim(file_get_contents("../config/user"));
-$password=trim(file_get_contents("../config/password"));
-$database="benchmarking";
- 
-mysql_connect("localhost",$user,$password);
+mysql_connect($server,$user,$password);
 @mysql_select_db($database) or die( "Unable to select database");
 
 // getting reference job information 
@@ -317,8 +308,6 @@ while ($i < $num ) {
     <td> <?php echo $res[$i]['ref_memory'] ?> </td>
     <td> <?php echo $res[$i]['ref_result'] ?> </td>
     </tr>
-
-   
 
     <?php
     $i++; 

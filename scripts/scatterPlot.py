@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import MySQLdb as mdb
 import sys
@@ -8,7 +8,7 @@ import string
 import benchmarking_utilities as bu
 import plot_utilities as pu
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 parser = argparse.ArgumentParser(description='Generates a scatter plot comparing two jobs.')
 parser.add_argument('-xj', '--xjob',type=int,
@@ -50,7 +50,8 @@ def setupGnuPlot(outfile, title, xlabel, ylabel) :
     script.write("set output \"" + plot_output + "\"\n")
     script.write("set size 1, 1\n")
     
-con = mdb.connect(server, user, password, table);
+    
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     

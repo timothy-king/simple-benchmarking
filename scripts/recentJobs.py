@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import MySQLdb as mdb
 import sys
@@ -25,7 +25,7 @@ daysD = args.days
 sinceTime = args.since
 listed = args.list
 
-(server, user, password, table) = bu.loadConfiguration()
+(server, user, password, database) = bu.loadConfiguration()
 
 def daysBeforeString(day_count):
     today = datetime.date.today()
@@ -47,7 +47,7 @@ def selectKMostRecent(k):
     cur.execute('SELECT * from Jobs order by Jobs.timestamp DESC limit %s;', k)
     return cur.fetchall()
 
-con = mdb.connect(server, user, password, table);
+con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     jobs = None

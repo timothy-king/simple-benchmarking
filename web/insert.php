@@ -7,14 +7,13 @@
 
 
 <?php
-$user=trim(file_get_contents("../config/user"));
-$password=trim(file_get_contents("../config/password"));
-$database="benchmarking";
+
+include_once "config.php";
 
    $reference_job=$_POST['reference'];
    $job=$_POST['job'];
    
-   mysql_connect("localhost",$user,$password);
+   mysql_connect($server,$user,$password);
    @mysql_select_db($database) or die( "Unable to select database");
 
    // getting reference job information 
