@@ -62,5 +62,21 @@
    <input type="Submit">
    </form>
 
+      <hr />
+
+   <h1> Generate Cactus Plot </h1>
+   
+   <table border="0" cellpadding="5"> 
+   <form action="generate_cacti.php" method="get">
+   <tr>
+   <td> Job Ids: </td>
+   <td> <input type="text" name="job_ids"> </td>
+   </tr>
+   </table>
+
+   <input type="Submit">
+   </form>
+
+   
    </body>
    </html>

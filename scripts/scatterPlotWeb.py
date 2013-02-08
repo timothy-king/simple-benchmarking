@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import MySQLdb as mdb
+import cStringIO
+import argparse
+import string
+import benchmarking_utilities as bu
+import plot_utilities as util
+
+(server, user, password, database) = bu.loadConfiguration()
+
+parser = argparse.ArgumentParser(description='Generates a scatter plot comparing two jobs.')
+parser.add_argument('-xj', '--xjob',type=int,
+                    help='the job to be plotted on the x axis', required=True)
+parser.add_argument('-yj', '--yjob',type=int,
+                    help='the job to be plotted on the y axis', required=True)
+parser.add_argument('-d', '--datafile', type=str,
+                    help='the temporary file where the data will be dumped', required=True)
+parser.add_argument('-j', '--javascript', type=str,
+                    help='the temporary javascript file where array for benchmark names will be dumped', required=True)
+
+args = parser.parse_args()
+xjob=args.xjob
+yjob=args.yjob
+
+data_file_name = args.datafile
+javascript_file_name = args.javascript
+
+    
+con = mdb.connect(server, user, password, database);
+with con:
+    cur = con.cursor()
+    
+    plot_xlabel = util.getJobName(cur, xjob)
+    plot_ylabel = util.getJobName(cur, yjob)
+    plot_title = plot_xlabel + " vs " + plot_ylabel
+    
+    data_file = open(data_file_name, 'w')
+    javascript_file = open(javascript_file_name, 'w')
+    gnuplot_command = cStringIO.StringIO()
+    
+    util.setupPlot(gnuplot_command, plot_xlabel, plot_ylabel, plot_title)
+    util.setupCanvasPlot(gnuplot_command, "gnuplot_canvas")
+
+    util.startPlot(gnuplot_command)
+
+    results = util.getRunTimes(cur, xjob, yjob)
+    families = util.groupByFamilies(results)
+    
+    util.declareJavaScriptArrays(javascript_file);
+    for family in families:
+        family_results = families[family]
+        util.dumpFamilyToFile(data_file, family, family_results)
+        util.dumpJavaScriptArray(javascript_file, family_results)
+        
+    for i in range(len(families)):
+        util.plotOneScatter(gnuplot_command, data_file_name, i, 2, 3)
+        util.plotSeparator(gnuplot_command)
+    util.plotDiagonal(gnuplot_command)
+    data_file.close()    
+    javascript_file.close()
+    print gnuplot_command.getvalue()
+    gnuplot_command.close()
+
+con.close()

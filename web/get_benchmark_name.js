@@ -28,11 +28,11 @@ function getBenchmarkName(xvalue_str, yvalue_str) {
     var min_difference = 1;
     var xvalue = parseFloat(xvalue_str);
     var yvalue = parseFloat(yvalue_str);
+
     for (var i = 0; i < benchmark_paths.length; i++) {
 	var new_xval = parseFloat(result_x_values[i]);
 	var new_yval = parseFloat(result_y_values[i]);
 	var diff = computeDifference(xvalue, yvalue, new_xval, new_yval);
-	//document.write(diff); 
 	if (diff < min_difference) {
 	    min_difference = diff;
 	    best_point = i; 

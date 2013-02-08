@@ -6,7 +6,7 @@ import subprocess
 import argparse
 import string
 import benchmarking_utilities as bu
-import plot_utilities as pu
+import plot_utilities as util
 
 (server, user, password, database) = bu.loadConfiguration()
 
@@ -30,7 +30,6 @@ yjob=args.yjob
 xfield=args.xfield
 yfield=args.yfield
 path = "" if args.path== None else args.path
-path = pu.convertToRelativePath(path)
 logarithmic_scale = args.logarithmic
 
 def setupGnuPlot(outfile, title, xlabel, ylabel) :
@@ -48,28 +47,46 @@ def setupGnuPlot(outfile, title, xlabel, ylabel) :
     script.write("set terminal pdf size 6, 4.5 \n")
     script.write("set key outside\n")
     script.write("set output \"" + plot_output + "\"\n")
-    script.write("set size 1, 1\n")
-    
+
+def generateScatterBaseName(xjob, yjob, xfield, yfield) :
+    return "scatter_" + str(xjob) + "_" + xfield + "_vs_" + str(yjob) + "_" +yfield
     
 con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     
-    xjob_name = pu.getJobName(cur, xjob)
-    yjob_name = pu.getJobName(cur, yjob)
-    outfile = path + str(xjob) + '-' + xfield + '_vs_' + str(yjob) + '-' + yfield;
-    plot_title = xjob_name + " vs " + yjob_name
-    plot_xlabel = xfield + "(" + xjob_name + ")" 
-    plot_ylabel = yfield + "(" + yjob_name + ")" 
-    plot_output = outfile + ".pdf"
-    print outfile
-    results = pu.selectAllResult(cur, xjob, yjob, xfield, yfield)
-    families = pu.groupByFamilies(results)
-    setupGnuPlot(outfile, plot_title, plot_xlabel, plot_ylabel)
-    pu.generatePlots(outfile, families)
-    exit_status = subprocess.call(["gnuplot",  outfile + ".gnuplot"])
-    if exit_status != 0 :
-        print "Error in generating plot."
-    else :
-        print "Plot generated: " + plot_output
+    plot_xlabel = util.getJobName(cur, xjob)
+    plot_ylabel = util.getJobName(cur, yjob)
+    plot_title = plot_xlabel + " vs " + plot_ylabel
+    
+    base_name = path + generateScatterBaseName(xjob, yjob, xfield, yfield)
+
+    gnuplot_file_name = base_name + ".gnuplot"
+    gnuplot_file = open(gnuplot_file_name, 'w')
+
+    data_file_name = base_name + ".dat"
+    data_file = open(data_file_name, 'w')
+    
+    pdf_file_name = base_name + ".pdf"
+
+    util.setupPlot(gnuplot_file, plot_xlabel, plot_ylabel, plot_title)
+    util.setupPdfPlot(gnuplot_file, pdf_file_name)
+
+    util.startPlot(gnuplot_file)
+
+    results = util.selectAllResult(cur, xjob, yjob, xfield, yfield)
+    families = util.groupByFamilies(results)
+
+    for family in families:
+        family_results = families[family]
+        util.dumpFamilyToFile(data_file, family, family_results)
+
+    for i in range(len(families)):
+        util.plotOneScatter(gnuplot_file, data_file_name, i, 2, 3)
+        util.plotSeparator(gnuplot_file)
+
+    util.plotDiagonal(gnuplot_file)
+    data_file.close()    
+    gnuplot_file.close()
+
 con.close()

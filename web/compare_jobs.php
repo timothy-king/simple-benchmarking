@@ -25,11 +25,10 @@ function generatePlot($xjob, $yjob) {
   // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
   $js_map_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
-  $js_code = shell_exec('../scripts/generateGnuPlotCommand.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');
+  $js_code = shell_exec('../scripts/scatterPlotWeb.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');
   $js_map_code = file_get_contents($js_map_file); 
   echo $js_code;
   echo $js_map_code;    
-  shell_exec('rm $temp_file'); 
 }
 echo "<script type=\"text/javascript\"> ";
 generatePlot($xjob, $yjob); 
@@ -41,6 +40,14 @@ echo "</script>";
 <body onload="gnuplot_canvas(); gnuplot.init(); benchmarkInit(); " oncontextmenu="return false;">
 
 <div class="gnuplot">
+<table class="plot">
+<tr><td>
+    <canvas id="gnuplot_canvas" width="800" height="600" tabindex="0">
+	Sorry, your browser seems not to support the HTML 5 canvas element
+    </canvas>
+</td></tr>
+</table>
+
 <table class="mbleft">
 <tr><td class="mousebox">
 <table class="mousebox" border=0>
@@ -51,11 +58,9 @@ echo "</script>";
       <table class="mousebox">
 	<tr>
 	  <td class="icon"></td>
-	  <td class="icon" onclick=gnuplot.toggle_grid><img src="js/grid.png" id="gnuplot_grid_icon" class="icon-image" alt="#" title="toggle grid"></td>
 	  <td class="icon" onclick=gnuplot.unzoom><img src="js/previouszoom.png" id="gnuplot_unzoom_icon" class="icon-image" alt="unzoom" title="unzoom"></td>
 	  <td class="icon" onclick=gnuplot.rezoom><img src="js/nextzoom.png" id="gnuplot_rezoom_icon" class="icon-image" alt="rezoom" title="rezoom"></td>
 	  <td class="icon" onclick=gnuplot.toggle_zoom_text><img src="js/textzoom.png" id="gnuplot_textzoom_icon" class="icon-image" alt="zoom text" title="zoom text with plot"></td>
-	  <td class="icon" onclick=gnuplot.popup_help()><img src="js/help.png" id="gnuplot_help_icon" class="icon-image" alt="?" title="help"></td>
 	</tr>
       </table>
   </td></tr>
@@ -67,14 +72,7 @@ echo "</script>";
 </table></td></tr>
 </table>
 </td>
-  
-<table class="plot">
-<tr><td>
-    <canvas id="gnuplot_canvas" width="800" height="600" tabindex="0">
-	Sorry, your browser seems not to support the HTML 5 canvas element
-    </canvas>
-</td></tr>
-</table>
+
 </div>
    
 

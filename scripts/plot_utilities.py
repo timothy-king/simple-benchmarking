@@ -95,7 +95,6 @@ def insertInToFamilyMap(familyMap, key, path, val1, val2) :
         familyMap[key] = [(path, val1, val2)]
         
 def groupByFamilies(results) :
-    # create one .dat file for each family
     familyMap = {}
     for result in results :
         path = result[0]
@@ -106,39 +105,91 @@ def groupByFamilies(results) :
 
     return familyMap
 
-def dumpDatFile(filename, family, family_results) :
-    outfile_name=filename +'-' +family + '.dat'
-    outfile = open(outfile_name, 'w')
-    outfile.write(";; " + family + "\n")
+# trying to make things more modular
 
+def setupPdfPlot(output, pdf_output) :
+    output.write("set terminal pdf size 6, 4.5\n")
+    output.write("set output \"" + pdf_output + "\"\n")
+
+def setupCanvasPlot(output, name) :
+    output.write("set terminal canvas size 800, 600 name \"" + name + "\"\n")
+    
+def setupPlot(output, xlabel, ylabel, title) :
+    output.write("set autoscale\n")
+    output.write("set title \"" + title + "\"\n")
+    output.write("set xlabel \"" + xlabel + "\"\n")
+    output.write("set ylabel \"" + ylabel + "\"\n")
+    output.write("set xtic auto\n")
+    output.write("set ytic auto\n")
+    output.write("set key outside autotitle columnheader\n")
+
+def setupCactusPlot(output) :
+    output.write("set logscale y\n")
+    
+def getSortedResults(cur, job_id) :
+    cur.execute("SELECT run_time FROM JobResults WHERE job_id = %s AND result != \"unknown\" ORDER BY run_time; ", (job_id))
+    res = cur.fetchall()
+    assert (res != None)
+    return res; 
+
+def dumpCactusToFile(data_file, title, data) :
+    data_file.write(title + " " + title + "\n")
+    sum = 0
+    for i in range(len(data)):
+        sum = sum + data[i][0]
+        xval = i
+        yval = sum 
+        data_file.write(str(xval) + " " + str(yval) + "\n")
+    data_file.write("\n\n")
+
+def dumpFamilyToFile(data_file, family, family_results) :
+    data_file.write(family + " " + family + " " + family + "\n")
+    for result in family_results :
+        path = result[0]
+        xval = result[1]
+        yval = result[2]
+        data_file.write(path + " " + str(xval) + " " + str(yval) + "\n")
+    data_file.write("\n\n")
+    
+def startPlot(output) :
+    output.write("plot ")
+    
+def plotSeparator(output) :
+    output.write(", "); 
+
+def plotDiagonal(output) :
+    output.write("x with lines linecolor rgb \"gray\"")
+    
+def plotOneCactus(output, data_file_name, index, col1, col2) :
+    file_str = "\"< cat " + data_file_name + "\" "
+    index_str = "index " +  str(index) + " "
+    columns_str = "using " + str(col1) + ":" + str(col2) + " "
+    configuration_str = " with linespoints pt " + str(index) + " pointsize 0.5 linecolor " + str(index + 1)
+    output.write(file_str + index_str + columns_str + configuration_str)
+
+def plotOneScatter(output, data_file_name, index, col1, col2) :
+    file_str = "\"< cat " + data_file_name + "\" "
+    index_str = "index " +  str(index) + " "
+    columns_str = "using " + str(col1) + ":" + str(col2) + " "
+    configuration_str = " with points pt "+ str(index + 1)+" pointsize 1 linecolor " + str(index + 1)
+    output.write(file_str + index_str + columns_str + configuration_str)
+    
+def getRunTimes(cur, xjob, yjob) :
+    cur.execute("select Problems.path, Aruntime, Bruntime from (select A.problem_id, A.run_time as Aruntime, B.run_time as Bruntime from ( select * from JobResults where job_id=%s) as A join (select * from JobResults where job_id=%s) as B on A.problem_id = B.problem_id) as C join Problems on Problems.id = C.problem_id;", (xjob, yjob))
+    res = cur.fetchall()
+    assert (res != None)
+    return res; 
+
+def dumpJavaScriptArray(output, family_results) :
     for result in family_results:
         path = result[0]
         xvalue = result[1]
         yvalue = result[2]
-        outfile.write(path + " " +str(xvalue) + " " + str(yvalue) + "\n") 
-    outfile.close()
-    return outfile_name
+        output.write("benchmark_paths.push(\"" + path + "\"); ");
+        output.write("result_x_values.push(" + str(xvalue) + "); ");
+        output.write("result_y_values.push(" + str(yvalue) + "); ");
 
-def gnuPlot(script_file, dat_file, color, family) :
-    script_file.write("\"" + dat_file + "\" using 2:3 with p pt 9 pointsize 1 linecolor " + str(color) + " title \"" + family + "\", ")
-
-def generatePlots(outfile, families) :
-    script = open(outfile + ".gnuplot", 'a')
-    script.write("plot ")
-    color = 0
-    for family in families:
-        family_results = families[family]
-        color = color + 1
-        dat_file = dumpDatFile(outfile, family, family_results)
-        gnuPlot(script, dat_file, color, family)
-
-    script.write("x with line linecolor rgb \"gray\" \n")
-
-def convertToRelativePath(absolute_path) :
-    current_path = os.getcwd()
-    levels = len(current_path.split('/'))
-    relative_path = ""
-    for i in range(levels - 1) :
-       relative_path = relative_path + "../"
-    relative_path = relative_path + absolute_path
-    return relative_path
+def declareJavaScriptArrays(output) :
+    output.write("var benchmark_paths = new Array(); \n")
+    output.write("var result_x_values = new Array(); \n")
+    output.write("var result_y_values = new Array(); \n")

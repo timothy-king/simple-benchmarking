@@ -72,7 +72,7 @@ def setupGnuPlot(title, xlabel, ylabel) :
     sys.stdout.write("set ylabel \"" + ylabel + "\"\n")
     sys.stdout.write("set xtic auto\n")
     sys.stdout.write("set ytic auto\n")
-    sys.stdout.write("set terminal canvas size 800, 600 name 'gnuplot_canvas'\n")
+    sys.stdout.write("set terminal canvas size 800, 600 name \"gnuplot_canvas\"\n")
     sys.stdout.write("set key outside autotitle columnheader\n")
     
 con = mdb.connect(server, user, password, table);
