@@ -16,12 +16,15 @@ log_path = bu.loadLogPath()
 
 parser = argparse.ArgumentParser(description='Run a job.')
 parser.add_argument('JobID', type=int, help='id of the job you want to work on')
+parser.add_argument('-f', '--force',
+                    help='forces errors on collect stats to be ignored', action="store_true")
 parser.add_argument('-v', '--verbosity', type=int,
                     help='how verbose the script should be', default=0)
 args = parser.parse_args()
 
 job_id = args.JobID
 verbosity = args.verbosity
+ignoreErrors = args.force
 
 # PID : combination of both system name and current process ID
 pid = os.getpid()
@@ -54,21 +57,39 @@ def storeProblemResult(problem_id, run_time, memory, result, exit_status):
     assert problem_result_id != None
     return problem_result_id
 
+def storeError(job_result_id):
+    con = mdb.connect(server, user, password, database);
+    with con:
+        cur = con.cursor()
+        cur.execute("""update JobResults set result='error' where id='%s'""",
+                    (job_result_id));
+        print "Setting the result of ", job_result_id, "to 'error'"
+        print "touched", int(cur.rowcount)
+    con.close()
+    
 def collectStats(job_result_id, err_log):
-    if cvc4 == 1:
-        csCvc4Args = ["./collectStatsCvc4.py",
-                      str(job_result_id), err_log, server, user, password, database]
-        if verbosity > 0:
-            print "collecting cvc4 stats with the command:", ' '.join(csCvc4Args)
-        print subprocess.check_output(csCvc4Args)
+    try:
+        if cvc4 == 1:
+            csCvc4Args = ["./collectStatsCvc4.py",
+                          str(job_result_id), err_log, server, user, password, database]
+            if verbosity > 0:
+                print "collecting cvc4 stats with the command:", ' '.join(csCvc4Args)
+            subprocess.check_call(csCvc4Args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    if z3 == 1:
-        z3Cvc4Args = ["./collectStatsZ3.py",
-                      str(job_result_id), err_log, server, user, password, database]
-        if verbosity > 0:
-            print "collecting z3 stats with the command:", ' '.join(z3Cvc4Args)
-        print subprocess.check_output(z3Cvc4Args)
-
+        if z3 == 1:
+            z3Cvc4Args = ["./collectStatsZ3.py",
+                          str(job_result_id), err_log, server, user, password, database]
+            if verbosity > 0:
+                print "collecting z3 stats with the command:", ' '.join(z3Cvc4Args)
+            subprocess.check_call(z3Cvc4Args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError:
+        if ignoreErrors:
+            print "Error"
+            return -1
+        else:
+            raise
+    return None
+                
 def runProcess(problem_id, problem_path, err_log, out_log, runlim_log):
     err_log_file=open(err_log, 'w')
     out_log_file=open(out_log, 'w')
@@ -143,8 +164,9 @@ def runProblem(p):
     print "in (", run_time, "seconds,", memory, " MB)"
 
     job_result_id = storeProblemResult(problem_id, run_time, memory, result, exit_status)
-    collectStats(job_result_id, err_log)
-
+    problem = collectStats(job_result_id, err_log)
+    if problem != None:
+        storeError(job_result_id)
 
 def popQueue():
     con = mdb.connect(server, user, password, database);
