@@ -10,10 +10,10 @@ def selectAllResult(cur, xjob, yjob, xfield, yfield) :
 
     if (xfield == 'run_time') :
         cur.execute("""SELECT JobResults.problem_id, JobResults.run_time \
-                       FROM JobResults where job_id=%s order by problem_id;""", (xjob))
+                       FROM JobResults where job_id=%s and result!=\"unknown\" and result != \"error\" order by problem_id;""", (xjob))
     elif (xfield == 'memory') :
         cur.execute("SELECT JobResults.problem_id, JobResults.memory \
-                     FROM JobResults where job_id=%s order by problem_id;", (xjob))
+                     FROM JobResults where job_id=%s and result!=\"unknown\" and result != \"error\" order by problem_id;", (xjob))
     else :
         xfield_id = getStatId(cur, xfield) 
         cur.execute("SELECT JobResults.problem_id, stat_value FROM ResultStats INNER JOIN JobResults ON ResultStats.job_result_id=JobResults.id WHERE JobResults.job_id=%s AND ResultStats.stat_id=%s;", (xjob, xfield_id))
@@ -35,9 +35,9 @@ def selectAllResult(cur, xjob, yjob, xfield, yfield) :
 
 def selectMatchingResult(cur, job, problem_id, field):
     if (field == 'run_time'): 
-        cur.execute("SELECT run_time FROM JobResults WHERE job_id=%s AND problem_id=%s;", (job, problem_id))
+        cur.execute("SELECT run_time FROM JobResults WHERE job_id=%s AND problem_id=%s AND result!=\"unknown\" AND result!=\"error\";", (job, problem_id))
     elif (field == 'memory'): 
-        cur.execute("SELECT memory FROM JobResults WHERE job_id=%s AND problem_id=%s;", (job, problem_id))
+        cur.execute("SELECT memory FROM JobResults WHERE job_id=%s AND problem_id=%s AND result!=\"unknown\" AND result!=\"error\";", (job, problem_id))
     else :
         stat_id = getStatId(cur, field)
         result_id = getResultId(cur, job, problem_id)
@@ -127,7 +127,7 @@ def setupCactusPlot(output) :
     output.write("set logscale y\n")
     
 def getSortedResults(cur, job_id) :
-    cur.execute("SELECT run_time FROM JobResults WHERE job_id = %s AND result != \"unknown\" ORDER BY run_time; ", (job_id))
+    cur.execute("SELECT run_time FROM JobResults WHERE job_id = %s AND result != \"unknown\" AND result != \"error\" ORDER BY run_time; ", (job_id))
     res = cur.fetchall()
     assert (res != None)
     return res; 
