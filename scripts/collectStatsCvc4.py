@@ -15,8 +15,11 @@ def isStatisticLine(line) :
     index = line.find(',')
     if (index < 0) :
         return False
-    line_arr= line.split(",")
-    if (len(line_arr) != 2) :
+    line_arr= line.partition(",")
+    print len(line_arr[2]), line_arr[2]
+    if (len(line_arr) != 3) :
+        return False
+    if line_arr[1] != ",":
         return False
     return True
 
@@ -42,11 +45,11 @@ with con:
         if (not isStatisticLine(line)) :
             if(skipError(line)):
                 continue
-            sys.exit(line)
-            #sys.exit("Not a valid statistic. \n")
-        line_arr= line.split(",")
+            sys.exit("Not a valid statistic:" + line)
+        line_arr= line.partition(",")
         stat_name=line_arr[0]
-        stat_value=line_arr[1]
+        the_comma=line_arr[1]
+        stat_value=line_arr[2]
 
         cur.execute("INSERT IGNORE INTO Stats VALUES(default, %s)", (stat_name))
         # get statistic id
