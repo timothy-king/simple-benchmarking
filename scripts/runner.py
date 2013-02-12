@@ -18,12 +18,15 @@ parser = argparse.ArgumentParser(description='Run a job.')
 parser.add_argument('JobID', type=int, help='id of the job you want to work on')
 parser.add_argument('-f', '--force',
                     help='forces errors on collect stats to be ignored', action="store_true")
+parser.add_argument('-p', '--pipe',
+                    help='Pipes the input file', action="store_true")
 parser.add_argument('-v', '--verbosity', type=int,
                     help='how verbose the script should be', default=0)
 args = parser.parse_args()
 
 job_id = args.JobID
 verbosity = args.verbosity
+pipeInput = args.pipe
 ignoreErrors = args.force
 
 # PID : combination of both system name and current process ID
@@ -66,7 +69,7 @@ def storeError(job_result_id):
         print "Setting the result of ", job_result_id, "to 'error'"
         print "touched", int(cur.rowcount)
     con.close()
-    
+
 def collectStats(job_result_id, err_log):
     try:
         if cvc4 == 1:
@@ -89,19 +92,34 @@ def collectStats(job_result_id, err_log):
         else:
             raise
     return None
-                
+
 def runProcess(problem_id, problem_path, err_log, out_log, runlim_log):
     err_log_file=open(err_log, 'w')
     out_log_file=open(out_log, 'w')
 
     run_args = [RUN_LIM, "-t", str(time_limit),
                 "-s", str(mem_limit), "-o", runlim_log,
-                binary_path]+ args.split() + [problem_path]
+                binary_path]+ args.split()
 
-    if verbosity > 0:
-        print "Running the exact command:", ' '.join(run_args)
+    if not pipeInput:
+        run_args.append(problem_path)
 
-    exit_status = subprocess.call(run_args, stdout=out_log_file, stderr=err_log_file)
+        if verbosity > 0:
+            print "Running the exact command:", ' '.join(run_args)
+
+        exit_status = subprocess.call(run_args, stdout=out_log_file, stderr=err_log_file)
+    else:
+        if verbosity > 0:
+            print "Running the exact command:", ' '.join(run_args), "<", problem_path
+
+        problem=open(problem_path)
+        problemContents = problem.read()
+        problem.close()
+        p = subprocess.Popen(run_args, stdout=out_log_file, stderr=err_log_file, stdin=subprocess.PIPE)
+        p.communicate(input=problemContents)
+        p.wait()
+        exit_status = p.returncode
+
 
     runlim_log_file=open(runlim_log,'a')
     print>>runlim_log_file, ("ExitCode="+str(exit_status))
