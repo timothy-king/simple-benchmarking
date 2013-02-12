@@ -30,7 +30,8 @@ group.add_argument('-z', '--z3', help='use stat collector for z3',
 parser.add_argument('--manual-start', help='don\'t start the runner automatically',
                    action="store_true")
 parser.add_argument('-a', '--arguments', nargs=argparse.REMAINDER,
-                     help='command line arguments for binary')
+                     help='command line arguments for binary',
+                    default=[])
 args = parser.parse_args()
 
 binary_path = args.binary
