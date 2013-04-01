@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# Usage:
+#   whatThisFileIsCalled.py job_id nameOfPbsFileToCreate.pbs
+#
+# Then to start the job on HPC:
+#   qsub nameOfPbsFileToCreate.pbs
+
 import sys
 
 job_id = sys.argv[1]
