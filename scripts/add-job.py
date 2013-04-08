@@ -105,3 +105,5 @@ if auto_start:
     subprocess.call(["./runner.py", str(job_id)])
 else:
     print "Start a runner with job ID", job_id
+    subprocess.call(["./createpbs.py", str(job_id), "jobtorun.pbs"])
+    print "(or qsub jobtorun.pbs for HPC)"

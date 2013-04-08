@@ -13,6 +13,7 @@ include_once "config.php";
 
 $statistic=$_GET['statistic'];
 $statistic=mysql_real_escape_string($statistic); 
+$statistic=str_replace(', ', '" OR name LIKE "', $statistic);
 $job=$_GET['job'];
 $ref_job=$_GET['reference'];
  

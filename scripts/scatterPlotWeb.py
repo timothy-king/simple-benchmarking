@@ -42,8 +42,8 @@ con = mdb.connect(server, user, password, database);
 with con:
     cur = con.cursor()
     
-    plot_xlabel = util.getJobName(cur, xjob)
-    plot_ylabel = util.getJobName(cur, yjob)
+    plot_xlabel = util.getJobName(cur, xjob) + " ("+ str(xjob) + ")"
+    plot_ylabel = util.getJobName(cur, yjob) + " ("+ str(yjob) + ")"
     plot_title = plot_xlabel + " vs " + plot_ylabel
     
     data_file = open(data_file_name, 'w')

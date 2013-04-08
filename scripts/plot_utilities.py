@@ -75,7 +75,7 @@ def getJobName(cur, job_id) :
 
 
 # We assume that the path is of the form */smtlib*/<logic>/family/*
-def parseFamily(path) :
+def parseFamily1(path) :
     tokens = path.split('/')
     index = None
     for i, token in enumerate(tokens) :
@@ -85,6 +85,23 @@ def parseFamily(path) :
     index = index + 2
     family = tokens[index]
     return family 
+
+# We infer family from file name, <family>.<benchmarkname>.smt2*
+def parseFamily2(path) :
+    tokens = path.split('/')
+    path = tokens[-1]      # path now is name of file
+    tokens = path.split('.')
+    if len(tokens) <= 2: # there was perhaps no family name in benchmark
+	raise
+    family = tokens[0]
+    return family
+
+# Try to parse family
+def parseFamily(path) :
+    try:
+        return parseFamily1(path)
+    except:
+	return parseFamily2(path)
 
 def insertInToFamilyMap(familyMap, key, path, val1, val2) :
     if key in familyMap :
