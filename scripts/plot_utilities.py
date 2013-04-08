@@ -180,6 +180,13 @@ def getRunTimes(cur, xjob, yjob) :
     assert (res != None)
     return res; 
 
+def getRunTimesAndAnswer(cur, xjob, yjob) :
+    cur.execute("select Problems.path, Aruntime, Bruntime, Aresult, Bresult from (select A.problem_id, A.run_time as Aruntime, A.result as Aresult, B.run_time as Bruntime, B.result as Bresult from ( select * from JobResults where job_id=%s) as A join (select * from JobResults where job_id=%s) as B on A.problem_id = B.problem_id) as C join Problems on Problems.id = C.problem_id;", (xjob, yjob))
+    res = cur.fetchall()
+    assert (res != None)
+    return res; 
+
+
 def dumpJavaScriptArray(output, family_results) :
     for result in family_results:
         path = result[0]

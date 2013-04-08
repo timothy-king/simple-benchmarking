@@ -32,7 +32,7 @@ def selectBenchmarksFromFile(cur, file):
     for path in bench_names:
         print path
 
-        cur.execute("SELECT id, path FROM Problems WHERE path like %s;", ('%'+path+'%'))
+        cur.execute("SELECT MAX(id), path FROM Problems WHERE path like %s;", ('%'+path+'%'))
         result=cur.fetchone()
         bench_ids.append(result[0])
         bench_paths.append(result[1])

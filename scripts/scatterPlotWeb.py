@@ -26,6 +26,17 @@ yjob=args.yjob
 data_file_name = args.datafile
 javascript_file_name = args.javascript
 
+def filterUnknowns(results_and_answers) :
+    filtered_results = []
+    for result in results_and_answers :
+        path = result[0]
+        xvalue = result[1]
+        yvalue = result[2]
+        res1 = result[3]
+        res2 = result[4]
+        if (res1 != "unknown" or res2 != "unknown") :
+            filtered_results.append((path, xvalue, yvalue))
+    return filtered_results
     
 con = mdb.connect(server, user, password, database);
 with con:
@@ -44,7 +55,8 @@ with con:
 
     util.startPlot(gnuplot_command)
 
-    results = util.getRunTimes(cur, xjob, yjob)
+    results_and_answers = util.getRunTimesAndAnswer(cur, xjob, yjob)
+    results = filterUnknowns(results_and_answers)
     families = util.groupByFamilies(results)
     
     util.declareJavaScriptArrays(javascript_file);
