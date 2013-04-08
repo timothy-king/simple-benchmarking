@@ -19,8 +19,8 @@ include_once "config.php";
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
    
-$xjob = $job;
-$yjob = $reference_job; 
+$xjob = $reference_job;
+$yjob = $job;
 function generatePlot($xjob, $yjob) {
   // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
