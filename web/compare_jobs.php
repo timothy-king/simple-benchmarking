@@ -145,8 +145,66 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   <br>
 
+  
   <h1> Results </h1>
-   
+  <h2> Summary </h2>
+  <?php
+  $query = "select COUNT(*) from JobResults where job_id = $job and result = \"sat\";"; 
+  $num_sat_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result = \"unsat\";"; 
+  $num_unsat_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result != \"unsat\" and result !=\"sat\" and run_time > $job_time_limit";
+  $num_timeout_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result != \"unsat\" and result !=\"sat\" and memory > $job_memory_limit";
+  $num_memout_job = mysql_result(mysql_query($query), 0);
+
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result = \"sat\";"; 
+  $num_sat_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result = \"unsat\";"; 
+  $num_unsat_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result != \"unsat\" and result !=\"sat\" and run_time > $ref_time_limit";
+  $num_timeout_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result != \"unsat\" and result !=\"sat\" and memory > $ref_memory_limit";
+  $num_memout_reference = mysql_result(mysql_query($query), 0);
+  ?>
+  
+  <table border="1" cellpadding="10">
+  <tr>
+  <th> </th>
+  <th> Job <?php echo $job ?> </th>
+  <th> Reference Job <?php echo $reference_job ?> </th>
+  </tr>
+
+  <tr>
+  <th> SAT solved </th>
+  <td> <?php echo $num_sat_job ?> </td>
+  <td> <?php echo $num_sat_reference ?> </td>
+  </tr>
+  <tr>
+  <th> UNSAT solved </th>
+  <td> <?php echo $num_unsat_job ?></td>
+  <td> <?php echo $num_unsat_reference?></td>
+  </tr>
+  <tr>
+  <th> TIMEOUT </th>
+  <td> <?php echo $num_timeout_job?></td>
+  <td> <?php echo $num_timeout_reference?></td>
+  </tr>
+  <tr>
+  <th> MEMOUT </th>
+  <td> <?php echo $num_memout_job?></td>
+  <td> <?php echo $num_memout_reference?></td>
+  </tr>
+  </table>
+
+  
   <?php
 
   // getting job results
@@ -158,7 +216,7 @@ $i=0;
 $num=mysql_numrows($job_results); 
 $j=0;
 $k=0;
-$diff_res=array();
+$solved_unsolved=array(); 
 $res=array(); 
 while ($i < $num) {
   $path = mysql_result($job_results, $i, 'path');
@@ -172,6 +230,28 @@ while ($i < $num) {
   $reference_result = mysql_result($job_results, $i, 'B_result');
   $reference_exit_status = mysql_result($job_results, $i, 'B_exit_status');
 
+  // trying to figure out memouts and timeouts
+  // FIXME: this should probably be done when putting the result in the database
+  if ($job_result != "sat" and $job_result != "unsat") {
+    if ($job_memory > $job_memory_limit) {
+      $job_result = "memout"; 
+    }
+    if ($job_run_time > $job_time_limit) {
+      $job_result = "timeout"; 
+    }
+  }
+
+  if ($reference_result != "sat" and $reference_result != "unsat") {
+    if ($reference_memory > $ref_memory_limit) {
+      $reference_result = "memout"; 
+    }
+    if ($reference_run_time > $ref_time_limit) {
+      $reference_result = "timeout"; 
+    }
+  }
+
+  
+  
   if ($job_result != $reference_result) {
     $diff_res[$j]['path'] = $path;
 
