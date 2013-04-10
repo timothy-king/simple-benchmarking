@@ -88,6 +88,7 @@ $ref_name=mysql_result($reference_info, 0, 'name');
 $ref_description=mysql_result($reference_info, 0, 'description'); 
 $ref_time_limit=mysql_result($reference_info, 0, 'time_limit');
 $ref_memory_limit=mysql_result($reference_info, 0, 'memory_limit');
+$ref_binary=mysql_result($reference_info, 0, 'binary_path');
 $ref_arguments=mysql_result($reference_info, 0, 'arguments');
 $ref_timestamp=mysql_result($reference_info, 0, 'timestamp');
 
@@ -98,6 +99,7 @@ $job_name=mysql_result($job_info, 0, 'name');
 $job_description=mysql_result($job_info, 0, 'description'); 
 $job_time_limit=mysql_result($job_info, 0, 'time_limit');
 $job_memory_limit=mysql_result($job_info, 0, 'memory_limit');
+$job_binary=mysql_result($job_info, 0, 'binary_path');
 $job_arguments=mysql_result($job_info, 0, 'arguments');
 $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
@@ -130,13 +132,13 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
   <td> <?php echo $job_description ?> </td>
   <td> <?php echo $job_time_limit ?> </td>
   <td> <?php echo $job_memory_limit ?> </td>
-  <td> <?php echo $job_arguments ?> </td>
+  <td> <?php echo $job_binary . $job_arguments ?> </td>
   <td> <?php echo $job_timestamp ?> </td>
   <td> <?php echo $ref_name ?> </td>
   <td> <?php echo $ref_description ?> </td>
   <td> <?php echo $ref_time_limit ?> </td>
   <td> <?php echo $ref_memory_limit ?> </td>
-  <td> <?php echo $ref_arguments ?> </td>
+  <td> <?php echo $ref_binary . $ref_arguments ?> </td>
   <td> <?php echo $ref_timestamp ?> </td>
 	
   </tr>
@@ -206,7 +208,21 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   
   <?php
+$query = "select job1.benchmarkcategory, job1.total, job1.solved, B.solved from (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$job group by benchmarkcategory) as job1 JOIN (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$reference_job group by benchmarkcategory) as B ON job1.benchmarkcategory = B.benchmarkcategory";
 
+$result = mysql_query($query);
+
+echo '<table class="sortable" border="1" cellpadding="5">\n';
+echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Reference solved</td>\n';
+while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
+    printf("<tr>\n");
+    for($i = 0; $i < count($row); $i++) {
+    printf("<td> %s ", $row[$i]);
+    }
+}
+echo "</table>";
+
+mysql_free_result($result);
   // getting job results
 
 $query="select Problems.path, C.A_run_time, C.A_memory, C.A_result, C.A_exit_status, C.B_run_time, C.B_memory, C.B_result, C.B_exit_status from (select A.problem_id, A.run_time as A_run_time, A.memory as A_memory, A.result as A_result, A.exit_status as A_exit_status, B.run_time as B_run_time, B.memory as B_memory, B.result as B_result, B.exit_status as B_exit_status from (select * from JobResults where job_id=$job) as A inner join (select * from JobResults where job_id = $reference_job) as B on A.problem_id = B.problem_id) as C inner join Problems on Problems.id=C.problem_id;";
