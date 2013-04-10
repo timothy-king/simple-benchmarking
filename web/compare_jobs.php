@@ -212,8 +212,8 @@ $query = "select job1.benchmarkcategory, job1.total, job1.solved, B.solved from 
 
 $result = mysql_query($query);
 
-echo '<table class="sortable" border="1" cellpadding="5">\n';
-echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Reference solved</td>\n';
+echo '<table class="sortable" border="1" cellpadding="5">';
+echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Reference solved</td>';
 while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
     printf("<tr>\n");
     for($i = 0; $i < count($row); $i++) {
