@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import cStringIO
 import MySQLdb as mdb
 import argparse
