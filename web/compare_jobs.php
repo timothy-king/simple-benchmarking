@@ -208,12 +208,12 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   
   <?php
-$query = "select job1.benchmarkcategory, job1.total, job1.solved, B.solved from (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$job group by benchmarkcategory) as job1 JOIN (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$reference_job group by benchmarkcategory) as B ON job1.benchmarkcategory = B.benchmarkcategory";
+$query = "select job1.benchmarkcategory, job1.total, job1.solved, job1.solved_time, B.solved, B.solved_time from (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved, sum(case result when 'sat' then run_time when 'unsat' then run_time else null end) as solved_time from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$job group by benchmarkcategory) as job1 JOIN (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved, sum(case result when 'sat' then run_time when 'unsat' then run_time else null end) as solved_time from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$reference_job group by benchmarkcategory) as B ON job1.benchmarkcategory = B.benchmarkcategory";
 
 $result = mysql_query($query);
 
 echo '<table class="sortable" border="1" cellpadding="5">';
-echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Reference solved</td>';
+echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Job solved time<td>Reference solved</td><td> Reference solved time';
 while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
     printf("<tr>\n");
     for($i = 0; $i < count($row); $i++) {
