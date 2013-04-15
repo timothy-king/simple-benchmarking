@@ -24,7 +24,8 @@ def isStatisticLine(line) :
     return True
 
 skipExactMatches = frozenset(["CVC4 suffered a segfault.\n",
-                              "CVC4 interrupted by timeout.\n"])
+                              "CVC4 interrupted by timeout.\n",
+                              "Looks like a NULL pointer was dereferenced.\n"])
 
 skipPrefixes = ["Offending address is "]
 
