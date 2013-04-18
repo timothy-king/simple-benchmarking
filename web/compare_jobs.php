@@ -18,20 +18,27 @@ include_once "config.php";
 
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
+$family="";
+if(isset($_GET['family'])) {
+  $family=$_GET['family'];
+}
    
 $xjob = $reference_job;
 $yjob = $job;
-function generatePlot($xjob, $yjob) {
+function generatePlot($xjob, $yjob, $family) {
   // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
   $js_map_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
-  $js_code = shell_exec('../scripts/scatterPlotWeb.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');
+  $command = '../scripts/scatterPlotWeb.py -xj '.$xjob.' -yj '.$yjob.
+               ' -d '.$data_file.' -j '. $js_map_file. ' -f="'.$family.'" | gnuplot';
+  // echo "<p> $command <p>";
+  $js_code = shell_exec($command);
   $js_map_code = file_get_contents($js_map_file); 
   echo $js_code;
   echo $js_map_code;    
 }
 echo "<script type=\"text/javascript\"> ";
-generatePlot($xjob, $yjob); 
+generatePlot($xjob, $yjob, $family); 
 echo "</script>";
 ?>
 
