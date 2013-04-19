@@ -115,37 +115,39 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
 <table border="1" cellpadding="10">
   <tr>
-  <th colspan="6"> Job <?php echo $job ?> </th>
-  <th colspan="6"> Reference Job <?php echo $reference_job ?> </th>
+  <th > </th>
+  <th colspan="1"> Job <?php echo $job ?> </th>
+  <th colspan="1"> Reference Job <?php echo $reference_job ?> </th>
   </tr>
 
   <tr>
-  <th> Name </th>
-  <th> Description </th>
-  <th> T/O </th>
-  <th> M/O </th>
-  <th> Args </th>
-  <th> Time </th>
-  <th> Name </th>
-  <th> Description </th>
-  <th> T/O </th>
-  <th> M/O </th>
-  <th> Args </th>
-  <th> Time </th>
-  </tr>
-
-  <tr>
+  <td> Name </td>
   <td> <?php echo $job_name ?> </td>
-  <td> <?php echo $job_description ?> </td>
-  <td> <?php echo $job_time_limit ?> </td>
-  <td> <?php echo $job_memory_limit ?> </td>
-  <td> <?php echo $job_binary . $job_arguments ?> </td>
-  <td> <?php echo $job_timestamp ?> </td>
   <td> <?php echo $ref_name ?> </td>
+  </tr>
+  <tr>
+  <td> Description </td>
+  <td> <?php echo $job_description ?> </td>
   <td> <?php echo $ref_description ?> </td>
+  </tr>
+  <tr>
+  <td> T/O </td>
+  <td> <?php echo $job_time_limit ?> </td>
   <td> <?php echo $ref_time_limit ?> </td>
+  </tr>
+  <tr>
+  <td> M/O </td>
+  <td> <?php echo $job_memory_limit ?> </td>
   <td> <?php echo $ref_memory_limit ?> </td>
+  </tr>
+  <tr>
+  <td> Args </td>
+  <td> <?php echo $job_binary . $job_arguments ?> </td>
   <td> <?php echo $ref_binary . $ref_arguments ?> </td>
+  </tr>
+  <tr>
+  <td> Time </td>
+  <td> <?php echo $job_timestamp ?> </td>
   <td> <?php echo $ref_timestamp ?> </td>
 	
   </tr>
