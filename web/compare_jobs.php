@@ -378,18 +378,26 @@ while ($i < $num ) {
   $i = 0;
 $num = count($res);
 while ($i < $num ) {
+
+  $jobRunTimeText = $res[$i]['job_run_time'];
+  $refRunTimeText = $res[$i]['reference_run_time'];
+  $jobRunTime = floatval( $jobRunTimeText );
+  $refRunTime = floatval( $refRunTimeText );
+  if($jobRunTime <= $refRunTime) { $jobRunTimeText = "<b>" . $jobRunTimeText . "</b>"; }
+  if($refRunTime <= $jobRunTime) { $refRunTimeText = "<b>" . $refRunTimeText . "</b>"; }
   ?>
     
   <tr>
     <td> <?php echo $i ?> </td>
     <td> <?php echo $res[$i]['path'] ?> </td>
     
-    <td> <?php echo $res[$i]['job_run_time'] ?> </td>
+
+    <td> <?php echo $jobRunTimeText ?> </td>
     <td> <?php echo $res[$i]['job_memory'] ?> </td>
     <td> <?php echo $res[$i]['job_result'] ?> </td>
     <td> <?php echo $res[$i]['job_exit_status'] ?> </td>
 
-    <td> <?php echo $res[$i]['reference_run_time'] ?> </td>
+    <td> <?php echo $refRunTimeText ?> </td>
     <td> <?php echo $res[$i]['reference_memory'] ?> </td>
     <td> <?php echo $res[$i]['reference_result'] ?> </td>
     <td> <?php echo $res[$i]['reference_exit_status'] ?> </td>
