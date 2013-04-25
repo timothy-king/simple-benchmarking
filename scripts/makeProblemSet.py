@@ -32,7 +32,7 @@ def selectBenchmarksFromFile(cur, file):
     for path in bench_names:
         print path
 
-        cur.execute("SELECT id, path FROM Problems WHERE path like %s;", ('%'+path+'%'))
+        cur.execute("SELECT MAX(id), path FROM Problems WHERE path like %s;", ('%'+path+'%'))
         result=cur.fetchone()
         bench_ids.append(result[0])
         bench_paths.append(result[1])
@@ -40,11 +40,16 @@ def selectBenchmarksFromFile(cur, file):
     return bench_ids, bench_paths
 
 def addBenchmarksToProblemSet(cur, pb_set, bench_ids, bench_paths):
+    assert len(bench_ids) == len(bench_paths)
     for i in range(len(bench_ids)):
         bench_id = bench_ids[i]
         bench_path = bench_paths[i]
-        print "Adding to problem set ", pb_set, " benchmark ", bench_path
-        cur.execute("INSERT INTO ProblemSetToProblem VALUES(DEFAULT, %s, %s);", (pb_set, bench_id))
+        # assert bench_path != None
+        if (bench_id == None or bench_path == None) :
+            print "Could not find problem" , bench_path, " id ", bench_id
+        else : 
+            print "Adding to problem set ", pb_set, " benchmark ", bench_path, " with id ", bench_id
+            cur.execute("INSERT INTO ProblemSetToProblem VALUES(DEFAULT, %s, %s);", (pb_set, bench_id))
 
 con = mdb.connect(server, user, password, database);
 with con:

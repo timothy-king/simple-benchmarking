@@ -27,7 +27,7 @@ args = parser.parse_args()
 job_id = args.JobID
 verbosity = args.verbosity
 pipeInput = args.pipe
-ignoreErrors = args.force
+ignoreErrors = True
 
 # PID : combination of both system name and current process ID
 pid = os.getpid()
