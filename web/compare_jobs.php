@@ -277,7 +277,8 @@ while ($i < $num) {
 
   
   
-  if ($job_result != $reference_result) {
+  if ( ($job_result == "sat" || $job_result == "unsat" || $reference_result == "sat" || $reference_result == "unsat")
+       && $job_result != $reference_result) {
     $diff_res[$j]['path'] = $path;
 
     $diff_res[$j]['job_run_time'] = $job_run_time;
