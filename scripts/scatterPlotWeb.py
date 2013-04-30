@@ -16,12 +16,15 @@ parser.add_argument('-yj', '--yjob',type=int,
                     help='the job to be plotted on the y axis', required=True)
 parser.add_argument('-d', '--datafile', type=str,
                     help='the temporary file where the data will be dumped', required=True)
+parser.add_argument('-f', '--family', type=str,
+                    help='select only this family when plotting', required=False) 
 parser.add_argument('-j', '--javascript', type=str,
                     help='the temporary javascript file where array for benchmark names will be dumped', required=True)
 
 args = parser.parse_args()
 xjob=args.xjob
 yjob=args.yjob
+input_family = args.family
 
 data_file_name = args.datafile
 javascript_file_name = args.javascript
@@ -58,9 +61,18 @@ with con:
     results_and_answers = util.getRunTimesAndAnswer(cur, xjob, yjob)
     results = filterUnknowns(results_and_answers)
     families = util.groupByFamilies(results)
+    if input_family == None or input_family == "":
+	run_over_families = families
+    else:
+	if input_family[0] == '-':
+ 		input_family = input_family[1:]
+		exclude_families = input_family.split(',')
+		run_over_families = [item for item in families if item not in exclude_families]
+        else:
+	        run_over_families = input_family.split(',')
     
     util.declareJavaScriptArrays(javascript_file);
-    for family in families:
+    for family in run_over_families:
         family_results = families[family]
         util.dumpFamilyToFile(data_file, family, family_results)
         util.dumpJavaScriptArray(javascript_file, family_results)

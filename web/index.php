@@ -77,6 +77,34 @@
    <input type="Submit">
    </form>
 
+	<hr />
+
+<p>
+<strong>View recently-completed CVC4 cluster jobs:</strong><br/>
+<?php
+include_once "config.php";
+
+mysql_connect($server,$user,$password);
+@mysql_select_db($database) or die( "Unable to select database");
+
+  $query = "select * from Jobs where Jobs.timestamp > subtime(now(), '72:00:00')";
+  $result = mysql_query($query);
+  $rows = mysql_num_rows($result);
+  if($rows == 0) {
+    echo "<br/>No jobs finished in the last seventy-two hours.\n";
+  } else {
+    echo $rows." job".($rows > 1 ? 's' : '')." submitted in the last seventy-two hours.\n";
+    while($job = mysql_fetch_assoc($result)) {
+	$url = "";
+      //$url = mkurl($job['id'], find_ref_job($job));
+      //$onmouseinout = "onmouseover=\"document.getElementById('fcompare".$job['id']."').style.visibility = 'visible';\" onmouseout=\"document.getElementById('fcompare".$job['id']."').style.visibility = 'hidden';\"";
+      echo "<li> <a href=\"$url\" title=\"".htmlentities($job['description'].$job['arguments'])."\">".$job['id']."</a> (".$job['name'].", submitted ".$job['timestamp'].")</div>\n";
+    }
+  }
+  mysql_free_result($result);
+?>
+</p>
+
    
    </body>
    </html>
