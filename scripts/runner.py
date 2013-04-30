@@ -26,12 +26,15 @@ parser.add_argument('-p', '--pipe',
                     help='Pipes the input file', action="store_true")
 parser.add_argument('-v', '--verbosity', type=int,
                     help='how verbose the script should be', default=0)
+parser.add_argument('-t', '--walltime', type=int,
+		    help='how many seconds should the runner take maximum')
 args = parser.parse_args()
 
 job_id = args.JobID
 verbosity = args.verbosity
 pipeInput = args.pipe
 ignoreErrors = args.force
+runner_time_limit = args.walltime
 
 # PID : combination of both system name and current process ID
 pid = os.getpid()
@@ -233,13 +236,9 @@ def haveSufficientTime(runner_time_limit, benchmark_time_limit, start_time):
     else:
         return True
 
-def hpcGetTimeLimit():
-    return os.getenv('PBS_WALLTIME', None)
-
 # Time related handling
-runner_time_limit = hpcGetTimeLimit()     # None if no time limit
 if runner_time_limit != None:
-    print("Time limit for runner set to %s seconds." + runner_time_limit)
+    print("Time limit for runner set to %s seconds." % runner_time_limit)
 
 # Grab globals for job
 print "Running job", job_id, "with process id", pid
@@ -270,3 +269,5 @@ while haveSufficientTime(runner_time_limit, time_limit, start_time):
         break
     elif problem != None:
         runProblem(problem)
+else:
+    sys.exit(1)
