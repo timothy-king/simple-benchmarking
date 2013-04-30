@@ -8,8 +8,12 @@ import subprocess
 import re
 import benchmarking_utilities as bu
 import platform, hashlib
+import time
 
-RUN_LIM="../runlim-sigxcpu/runlim"
+start_time = time.time()
+
+os.chdir(sys.path[0])     # change to directory where script is...
+RUN_LIM="../runlim-sigxcpu/runlim"   #...so we can use relative paths
 
 (server, user, password, database) = bu.loadConfiguration()
 log_path = bu.loadLogPath()
@@ -27,7 +31,7 @@ args = parser.parse_args()
 job_id = args.JobID
 verbosity = args.verbosity
 pipeInput = args.pipe
-ignoreErrors = True
+ignoreErrors = args.force
 
 # PID : combination of both system name and current process ID
 pid = os.getpid()
@@ -217,6 +221,26 @@ def popQueue():
     con.close()
     return (emp, problem)
 
+def haveSufficientTime(runner_time_limit, benchmark_time_limit, start_time):
+    if runner_time_limit == None:
+	return True
+    elapsed_time = time.time() - start_time
+    overhead_time = 30    # just to be safe
+    remaining_time = float(runner_time_limit) - elapsed_time - overhead_time
+    if remaining_time < benchmark_time_limit:
+        print("Have run out of time (%d seconds left)."% remaining_time)
+        return False
+    else:
+        return True
+
+def hpcGetTimeLimit():
+    return os.getenv('PBS_WALLTIME', None)
+
+# Time related handling
+runner_time_limit = hpcGetTimeLimit()     # None if no time limit
+if runner_time_limit != None:
+    print("Time limit for runner set to %s seconds." + runner_time_limit)
+
 # Grab globals for job
 print "Running job", job_id, "with process id", pid
 (time_limit, mem_limit, binary_path, cvc4, z3, args) = (None, None, None, None, None, None)
@@ -237,10 +261,10 @@ con.close()
 
 print "With time_limit=",time_limit, ", mem_limit=",mem_limit,
 print ", args=",args,", binary_path=",binary_path,
-print ", cvc4=",cvc4,", and z3=",z3
+print ", cvc4=",cvc4,", and z3=",z3, "ignoreErrors (stats) = ", ignoreErrors
 
 #main loop
-while True:
+while haveSufficientTime(runner_time_limit, time_limit, start_time):
     (emp, problem) = popQueue()
     if emp == True:
         break
