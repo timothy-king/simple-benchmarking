@@ -75,7 +75,7 @@ def getJobName(cur, job_id) :
 
 
 # We assume that the path is of the form */smtlib*/<logic>/family/*
-def parseFamily(path) :
+def parseFamily1(path) :
     tokens = path.split('/')
     index = None
     for i, token in enumerate(tokens) :
@@ -85,6 +85,23 @@ def parseFamily(path) :
     index = index + 2
     family = tokens[index]
     return family 
+
+# We infer family from file name, <family>.<benchmarkname>.smt2*
+def parseFamily2(path) :
+    tokens = path.split('/')
+    path = tokens[-1]      # path now is name of file
+    tokens = path.split('.')
+    if len(tokens) <= 2: # there was perhaps no family name in benchmark
+	raise
+    family = tokens[0]
+    return family
+
+# Try to parse family
+def parseFamily(path) :
+    try:
+        return parseFamily1(path)
+    except:
+	return parseFamily2(path)
 
 def insertInToFamilyMap(familyMap, key, path, val1, val2) :
     if key in familyMap :
@@ -179,6 +196,13 @@ def getRunTimes(cur, xjob, yjob) :
     res = cur.fetchall()
     assert (res != None)
     return res; 
+
+def getRunTimesAndAnswer(cur, xjob, yjob) :
+    cur.execute("select Problems.path, Aruntime, Bruntime, Aresult, Bresult from (select A.problem_id, A.run_time as Aruntime, A.result as Aresult, B.run_time as Bruntime, B.result as Bresult from ( select * from JobResults where job_id=%s) as A join (select * from JobResults where job_id=%s) as B on A.problem_id = B.problem_id) as C join Problems on Problems.id = C.problem_id;", (xjob, yjob))
+    res = cur.fetchall()
+    assert (res != None)
+    return res; 
+
 
 def dumpJavaScriptArray(output, family_results) :
     for result in family_results:

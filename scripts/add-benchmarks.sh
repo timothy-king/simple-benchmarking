@@ -33,7 +33,7 @@ done
 ##############
 ### MySql ###
 
-BENCHMARKS=`find $BENCHMARKS_DIR -name '*.smt2'`
+BENCHMARKS=`find $BENCHMARKS_DIR -name '*.smt'`
 #echo $BENCHMARKS
 
 for FILE in $BENCHMARKS; do

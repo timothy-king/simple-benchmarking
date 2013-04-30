@@ -19,8 +19,8 @@ include_once "config.php";
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
    
-$xjob = $job;
-$yjob = $reference_job; 
+$xjob = $reference_job;
+$yjob = $job;
 function generatePlot($xjob, $yjob) {
   // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
@@ -145,77 +145,143 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   <br>
 
+  
   <h1> Results </h1>
-   
+  <h2> Summary </h2>
+  <?php
+  $query = "select COUNT(*) from JobResults where job_id = $job and result = \"sat\";"; 
+  $num_sat_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result = \"unsat\";"; 
+  $num_unsat_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result != \"unsat\" and result !=\"sat\" and run_time > $job_time_limit";
+  $num_timeout_job = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $job and result != \"unsat\" and result !=\"sat\" and memory > $job_memory_limit";
+  $num_memout_job = mysql_result(mysql_query($query), 0);
+
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result = \"sat\";"; 
+  $num_sat_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result = \"unsat\";"; 
+  $num_unsat_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result != \"unsat\" and result !=\"sat\" and run_time > $ref_time_limit";
+  $num_timeout_reference = mysql_result(mysql_query($query), 0);
+
+  $query = "select COUNT(*) from JobResults where job_id = $reference_job and result != \"unsat\" and result !=\"sat\" and memory > $ref_memory_limit";
+  $num_memout_reference = mysql_result(mysql_query($query), 0);
+  ?>
+  
+  <table border="1" cellpadding="10">
+  <tr>
+  <th> </th>
+  <th> Job <?php echo $job ?> </th>
+  <th> Reference Job <?php echo $reference_job ?> </th>
+  </tr>
+
+  <tr>
+  <th> SAT solved </th>
+  <td> <?php echo $num_sat_job ?> </td>
+  <td> <?php echo $num_sat_reference ?> </td>
+  </tr>
+  <tr>
+  <th> UNSAT solved </th>
+  <td> <?php echo $num_unsat_job ?></td>
+  <td> <?php echo $num_unsat_reference?></td>
+  </tr>
+  <tr>
+  <th> TIMEOUT </th>
+  <td> <?php echo $num_timeout_job?></td>
+  <td> <?php echo $num_timeout_reference?></td>
+  </tr>
+  <tr>
+  <th> MEMOUT </th>
+  <td> <?php echo $num_memout_job?></td>
+  <td> <?php echo $num_memout_reference?></td>
+  </tr>
+  </table>
+
+  
   <?php
 
   // getting job results
 
-$query="SELECT * from JobResults where job_id=$job";
-$job_result=mysql_query($query);
+$query="select Problems.path, C.A_run_time, C.A_memory, C.A_result, C.A_exit_status, C.B_run_time, C.B_memory, C.B_result, C.B_exit_status from (select A.problem_id, A.run_time as A_run_time, A.memory as A_memory, A.result as A_result, A.exit_status as A_exit_status, B.run_time as B_run_time, B.memory as B_memory, B.result as B_result, B.exit_status as B_exit_status from (select * from JobResults where job_id=$job) as A inner join (select * from JobResults where job_id = $reference_job) as B on A.problem_id = B.problem_id) as C inner join Problems on Problems.id=C.problem_id;";
+$job_results=mysql_query($query);
 
 $i=0;
-$num=mysql_numrows($job_result); 
+$num=mysql_numrows($job_results); 
 $j=0;
 $k=0;
-$diff_res=array();
+$solved_unsolved=array(); 
 $res=array(); 
 while ($i < $num) {
-  $problem_id = mysql_result($job_result, $i, 'problem_id');
-  // getting problem path and logic
-  $query="SELECT * FROM Problems WHERE id=$problem_id";
-  $problem=mysql_query($query);
+  $path = mysql_result($job_results, $i, 'path');
+  $job_run_time = mysql_result($job_results, $i, 'A_run_time');
+  $job_memory = mysql_result($job_results, $i, 'A_memory');
+  $job_result = mysql_result($job_results, $i, 'A_result');
+  $job_exit_status = mysql_result($job_results, $i, 'A_exit_status');
 
-  $problem_path=mysql_result($problem, 0, 'path');
-  $index = strrpos($problem_path, "/");
-  $problem_path=substr($problem_path,$index+1); 
-  $problem_logic=mysql_result($problem, 0, 'logic'); 
-	 
-  $query="SELECT * FROM JobResults WHERE job_id=$reference_job and problem_id=$problem_id";
-  $reference_result=mysql_query($query);
-  $num_rows = mysql_num_rows($reference_result);
-  if ($num_rows > 0) {
-      
-    $i_ref_result = mysql_result($reference_result, 0, 'result');
-    $i_job_result = mysql_result($job_result, $i, 'result');
+  $reference_run_time = mysql_result($job_results, $i, 'B_run_time');
+  $reference_memory = mysql_result($job_results, $i, 'B_memory');
+  $reference_result = mysql_result($job_results, $i, 'B_result');
+  $reference_exit_status = mysql_result($job_results, $i, 'B_exit_status');
 
-    if ($i_ref_result != $i_job_result) {
-      // storing different results in a separate array
-      $diff_res[$j]['problem_id']=$problem_id; 
-      $diff_res[$j]['problem_path']=$problem_path;
-      $diff_res[$j]['problem_logic']=$problem_logic;
-
-      $diff_res[$j]['job_run_time']=mysql_result($job_result, $i, 'run_time');
-      $diff_res[$j]['job_memory']=mysql_result($job_result, $i, 'memory');
-      $diff_res[$j]['job_result']=$i_job_result;
-      $diff_res[$j]['job_exit_status']=mysql_result($job_result, $i, 'exit_status');
-
-      $diff_res[$j]['ref_run_time']=mysql_result($reference_result, 0, 'run_time');
-      $diff_res[$j]['ref_memory']=mysql_result($reference_result, 0, 'memory');
-      $diff_res[$j]['ref_result']=$i_ref_result;
-      $diff_res[$j]['ref_exit_status']=mysql_result($reference_result, 0, 'exit_status');
-      $j++; 
-    } else {
-      // storing results
-      $res[$k]['problem_id']=$problem_id; 
-      $res[$k]['problem_path']=$problem_path;
-      $res[$k]['problem_logic']=$problem_logic;
-
-      $res[$k]['job_run_time']=mysql_result($job_result, $i, 'run_time');
-      $res[$k]['job_memory']=mysql_result($job_result, $i, 'memory');
-      $res[$k]['job_result']=$i_job_result;
-      $res[$k]['job_exit_status']=mysql_result($job_result, $i, 'exit_status');
-
-      $res[$k]['ref_run_time']=mysql_result($reference_result, 0, 'run_time');
-      $res[$k]['ref_memory']=mysql_result($reference_result, 0, 'memory');
-      $res[$k]['ref_result']=$i_ref_result;
-      $res[$k]['ref_exit_status']=mysql_result($reference_result, 0, 'exit_status');
-      $k++; 
+  // trying to figure out memouts and timeouts
+  // FIXME: this should probably be done when putting the result in the database
+  if ($job_result != "sat" and $job_result != "unsat") {
+    if ($job_memory > $job_memory_limit) {
+      $job_result = "memout"; 
     }
+    if ($job_run_time > $job_time_limit) {
+      $job_result = "timeout"; 
+    }
+  }
+
+  if ($reference_result != "sat" and $reference_result != "unsat") {
+    if ($reference_memory > $ref_memory_limit) {
+      $reference_result = "memout"; 
+    }
+    if ($reference_run_time > $ref_time_limit) {
+      $reference_result = "timeout"; 
+    }
+  }
+
+  
+  
+  if ($job_result != $reference_result) {
+    $diff_res[$j]['path'] = $path;
+
+    $diff_res[$j]['job_run_time'] = $job_run_time;
+    $diff_res[$j]['job_memory'] = $job_memory;
+    $diff_res[$j]['job_result'] = $job_result;
+    $diff_res[$j]['job_exit_status'] = $job_exit_status;
+    
+    $diff_res[$j]['reference_run_time'] = $reference_run_time;
+    $diff_res[$j]['reference_memory'] = $reference_memory;
+    $diff_res[$j]['reference_result'] = $reference_result;
+    $diff_res[$j]['reference_exit_status'] = $reference_exit_status;
+    ++$j; 
+  } else {
+    $res[$k]['path'] = $path;
+
+    $res[$k]['job_run_time'] = $job_run_time;
+    $res[$k]['job_memory'] = $job_memory;
+    $res[$k]['job_result'] = $job_result;
+    $res[$k]['job_exit_status'] = $job_exit_status;
+    
+    $res[$k]['reference_run_time'] = $reference_run_time;
+    $res[$k]['reference_memory'] = $reference_memory;
+    $res[$k]['reference_result'] = $reference_result;
+    $res[$k]['reference_exit_status'] = $reference_exit_status;
+    ++$k; 
   }
   $i++;
 }
-   
+  
 mysql_close();
 ?>
 
@@ -224,16 +290,15 @@ mysql_close();
 <table class="sortable" border="1" cellpadding="5">
   <tr>
   <th> # </th>
-  <th> Logic </th>
   <th> Benchmark </th>
-  <th> Exit</th>
-  <th> Time </th>
-  <th> MB</th>
-  <th> Result</th>
-  <th> Ref Exit</th>
-  <th> Ref Time </th>
-  <th> Ref MB</th>
-  <th> Ref Result</th>
+  <th> Run Time </th>
+  <th> Memory</th>
+  <th> Result </th>
+  <th> Exit </th>
+  <th> Ref Run Time </th>
+  <th> Ref Memory</th>
+  <th> Ref Result </th>
+  <th> Ref Exit </th>
   </tr>
 
   <?php
@@ -244,18 +309,18 @@ while ($i < $num ) {
     
   <tr>
     <td> <?php echo $i ?> </td>
-    <td> <?php echo $diff_res[$i]['problem_logic'] ?> </td>
-    <td> <?php echo $diff_res[$i]['problem_path'] ?> </td>
-
-    <td> <?php echo $diff_res[$i]['job_exit_status'] ?> </td>
+    <td> <?php echo $diff_res[$i]['path'] ?> </td>
+    
     <td> <?php echo $diff_res[$i]['job_run_time'] ?> </td>
     <td> <?php echo $diff_res[$i]['job_memory'] ?> </td>
     <td> <?php echo $diff_res[$i]['job_result'] ?> </td>
+    <td> <?php echo $diff_res[$i]['job_exit_status'] ?> </td>
 
-    <td> <?php echo $diff_res[$i]['ref_exit_status'] ?> </td>
-    <td> <?php echo $diff_res[$i]['ref_run_time'] ?> </td>
-    <td> <?php echo $diff_res[$i]['ref_memory'] ?> </td>
-    <td> <?php echo $diff_res[$i]['ref_result'] ?> </td>
+    <td> <?php echo $diff_res[$i]['reference_run_time'] ?> </td>
+    <td> <?php echo $diff_res[$i]['reference_memory'] ?> </td>
+    <td> <?php echo $diff_res[$i]['reference_result'] ?> </td>
+    <td> <?php echo $diff_res[$i]['reference_exit_status'] ?> </td>
+
     </tr>
 
    
@@ -273,16 +338,15 @@ while ($i < $num ) {
 <table class="sortable" border="1" cellpadding="5">
   <tr>
   <th> # </th>
-  <th> Logic </th>
   <th> Benchmark </th>
-  <th> Exit</th>
-  <th> Time </th>
-  <th> MB</th>
-  <th> Result</th>
-  <th> Ref Exit</th>
-  <th> Ref Time </th>
-  <th> Ref MB</th>
-  <th> Ref Result</th>
+  <th> Run Time </th>
+  <th> Memory</th>
+  <th> Result </th>
+  <th> Exit </th>
+  <th> Ref Run Time </th>
+  <th> Ref Memory</th>
+  <th> Ref Result </th>
+  <th> Ref Exit </th>
   </tr>
 
   <?php
@@ -293,20 +357,17 @@ while ($i < $num ) {
     
   <tr>
     <td> <?php echo $i ?> </td>
-    <td> <?php echo $res[$i]['problem_logic'] ?> </td>
-    <td> <?php echo $res[$i]['problem_path'] ?> </td>
-
-    <td> <?php echo $res[$i]['job_exit_status'] ?> </td>
+    <td> <?php echo $res[$i]['path'] ?> </td>
+    
     <td> <?php echo $res[$i]['job_run_time'] ?> </td>
     <td> <?php echo $res[$i]['job_memory'] ?> </td>
     <td> <?php echo $res[$i]['job_result'] ?> </td>
+    <td> <?php echo $res[$i]['job_exit_status'] ?> </td>
 
-    <td> <?php echo $res[$i]['ref_exit_status'] ?> </td>
-    <td> <?php echo $res[$i]['ref_run_time'] ?> </td>
-    <td> <?php echo $res[$i]['ref_memory'] ?> </td>
-    <td> <?php echo $res[$i]['ref_result'] ?> </td>
-    </tr>
-
+    <td> <?php echo $res[$i]['reference_run_time'] ?> </td>
+    <td> <?php echo $res[$i]['reference_memory'] ?> </td>
+    <td> <?php echo $res[$i]['reference_result'] ?> </td>
+    <td> <?php echo $res[$i]['reference_exit_status'] ?> </td>
     <?php
     $i++; 
 }

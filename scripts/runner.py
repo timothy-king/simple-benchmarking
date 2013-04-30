@@ -157,8 +157,7 @@ def grabTimeAndMemoryFromRunLimLog(runlim_log):
 def grabResultFromOutLog(out_log):
     out_log_file=open(out_log, 'r')
     result = None
-    for line in out_log_file:
-        result = line
+    result = out_log_file.readline()
     out_log_file.close()
 
     if result != None:
@@ -262,10 +261,13 @@ print "With time_limit=",time_limit, ", mem_limit=",mem_limit,
 print ", args=",args,", binary_path=",binary_path,
 print ", cvc4=",cvc4,", and z3=",z3, "ignoreErrors (stats) = ", ignoreErrors
 
+
+
 #main loop
 while haveSufficientTime(runner_time_limit, time_limit, start_time):
     (emp, problem) = popQueue()
     if emp == True:
+        print "Done"
         break
     elif problem != None:
         runProblem(problem)
