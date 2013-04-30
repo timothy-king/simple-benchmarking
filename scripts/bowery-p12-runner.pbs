@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -q p12
+#PBS -l nodes=2:ppn=12,walltime=09:00:00
+#PBS -N run2.A
+#PBS -M kshitij@nyu.edu
+#PBS -m abe
+#PBS -e localhost:/scratch/kb1289/${PBS_JOBNAME}.err
+#PBS -o localhost:/scratch/kb1289/${PBS_JOBNAME}.out
+
+pbsdsh -u -v bash -c '{ . /home/kb1289/.bash.d/modules; for i in 1 2 3 4 5 6 7 8 9 10 11; do /scratch/kb1289/test/simple-benchmarking/scripts/runner_auto.py --auto -t $PBS_WALLTIME & sleep 1; done; wait; } >/scratch/kb1289/${PBS_JOBNAME}.${PBS_NODENUM}.out 2>/scratch/kb1289/${PBS_JOBNAME}.${PBS_NODENUM}.err'
+
+#. /home/kb1289/.bash.d/modules
+
+#cd /scratch/kb1289/test/simple-benchmarking/scripts
+
+#for job in 180; do
+#for i in 1 2 3 4 5 6 7 8 9 10 11; do
+#  ./runner.py $job &
+#  sleep 1
+#done
+
+#wait
+#done
