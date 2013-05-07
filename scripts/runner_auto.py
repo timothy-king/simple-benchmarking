@@ -32,7 +32,7 @@ def getJob():
     con = mdb.connect(server, user, password, database);
     with con:
         cur = con.cursor()
-        cur.execute("""SELECT job_id FROM Queue ORDER BY RAND() LIMIT 1""")
+        cur.execute("""SELECT job_id FROM Queue WHERE runner_pid IS NULL ORDER BY RAND() LIMIT 1""")
         res = cur.fetchall()
 
     if len(res) == 0:
