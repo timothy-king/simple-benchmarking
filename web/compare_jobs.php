@@ -18,20 +18,27 @@ include_once "config.php";
 
 $reference_job=$_GET['reference'];
 $job=$_GET['job'];
+$family="";
+if(isset($_GET['family'])) {
+  $family=$_GET['family'];
+}
    
 $xjob = $reference_job;
 $yjob = $job;
-function generatePlot($xjob, $yjob) {
+function generatePlot($xjob, $yjob, $family) {
   // make sure your system is set up to periodically clear the tmp directory 
   $data_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
   $js_map_file = tempnam(sys_get_temp_dir(), "gnuplotdata");
-  $js_code = shell_exec('../scripts/scatterPlotWeb.py -xj '.$xjob.' -yj '.$yjob.' -d '.$data_file.' -j '. $js_map_file. ' | gnuplot');
+  $command = '../scripts/scatterPlotWeb.py -xj '.$xjob.' -yj '.$yjob.
+               ' -d '.$data_file.' -j '. $js_map_file. ' -f="'.$family.'" | gnuplot';
+  // echo "<p> $command <p>";
+  $js_code = shell_exec($command);
   $js_map_code = file_get_contents($js_map_file); 
   echo $js_code;
   echo $js_map_code;    
 }
 echo "<script type=\"text/javascript\"> ";
-generatePlot($xjob, $yjob); 
+generatePlot($xjob, $yjob, $family); 
 echo "</script>";
 ?>
 
@@ -88,6 +95,7 @@ $ref_name=mysql_result($reference_info, 0, 'name');
 $ref_description=mysql_result($reference_info, 0, 'description'); 
 $ref_time_limit=mysql_result($reference_info, 0, 'time_limit');
 $ref_memory_limit=mysql_result($reference_info, 0, 'memory_limit');
+$ref_binary=mysql_result($reference_info, 0, 'binary_path');
 $ref_arguments=mysql_result($reference_info, 0, 'arguments');
 $ref_timestamp=mysql_result($reference_info, 0, 'timestamp');
 
@@ -98,6 +106,7 @@ $job_name=mysql_result($job_info, 0, 'name');
 $job_description=mysql_result($job_info, 0, 'description'); 
 $job_time_limit=mysql_result($job_info, 0, 'time_limit');
 $job_memory_limit=mysql_result($job_info, 0, 'memory_limit');
+$job_binary=mysql_result($job_info, 0, 'binary_path');
 $job_arguments=mysql_result($job_info, 0, 'arguments');
 $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
@@ -106,37 +115,39 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
 <table border="1" cellpadding="10">
   <tr>
-  <th colspan="6"> Job <?php echo $job ?> </th>
-  <th colspan="6"> Reference Job <?php echo $reference_job ?> </th>
+  <th > </th>
+  <th colspan="1"> Job <?php echo $job ?> </th>
+  <th colspan="1"> Reference Job <?php echo $reference_job ?> </th>
   </tr>
 
   <tr>
-  <th> Name </th>
-  <th> Description </th>
-  <th> T/O </th>
-  <th> M/O </th>
-  <th> Args </th>
-  <th> Time </th>
-  <th> Name </th>
-  <th> Description </th>
-  <th> T/O </th>
-  <th> M/O </th>
-  <th> Args </th>
-  <th> Time </th>
-  </tr>
-
-  <tr>
+  <td> Name </td>
   <td> <?php echo $job_name ?> </td>
-  <td> <?php echo $job_description ?> </td>
-  <td> <?php echo $job_time_limit ?> </td>
-  <td> <?php echo $job_memory_limit ?> </td>
-  <td> <?php echo $job_arguments ?> </td>
-  <td> <?php echo $job_timestamp ?> </td>
   <td> <?php echo $ref_name ?> </td>
+  </tr>
+  <tr>
+  <td> Description </td>
+  <td> <?php echo $job_description ?> </td>
   <td> <?php echo $ref_description ?> </td>
+  </tr>
+  <tr>
+  <td> T/O </td>
+  <td> <?php echo $job_time_limit ?> </td>
   <td> <?php echo $ref_time_limit ?> </td>
+  </tr>
+  <tr>
+  <td> M/O </td>
+  <td> <?php echo $job_memory_limit ?> </td>
   <td> <?php echo $ref_memory_limit ?> </td>
-  <td> <?php echo $ref_arguments ?> </td>
+  </tr>
+  <tr>
+  <td> Args </td>
+  <td> <?php echo $job_binary . $job_arguments ?> </td>
+  <td> <?php echo $ref_binary . $ref_arguments ?> </td>
+  </tr>
+  <tr>
+  <td> Time </td>
+  <td> <?php echo $job_timestamp ?> </td>
   <td> <?php echo $ref_timestamp ?> </td>
 	
   </tr>
@@ -206,7 +217,21 @@ $job_timestamp=mysql_result($job_info, 0, 'timestamp');
 
   
   <?php
+$query = "select job1.benchmarkcategory, job1.total, job1.solved, job1.solved_time, B.solved, B.solved_time from (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved, sum(case result when 'sat' then run_time when 'unsat' then run_time else null end) as solved_time from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$job group by benchmarkcategory) as job1 JOIN (select benchmarkcategory, count(*) as total, count(case result when 'sat' then 1 when 'unsat' then 1 else null end) as solved, sum(case result when 'sat' then run_time when 'unsat' then run_time else null end) as solved_time from JobResults JOIN ProblemSet6 ON ProblemSet6.id=problem_id where job_id=$reference_job group by benchmarkcategory) as B ON job1.benchmarkcategory = B.benchmarkcategory";
 
+$result = mysql_query($query);
+
+echo '<table class="sortable" border="1" cellpadding="5">';
+echo '<tr><td>Category</td><td>Total</td><td>Job solved</td><td>Job solved time<td>Reference solved</td><td> Reference solved time';
+while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
+    printf("<tr>\n");
+    for($i = 0; $i < count($row); $i++) {
+    printf("<td> %s ", $row[$i]);
+    }
+}
+echo "</table>";
+
+mysql_free_result($result);
   // getting job results
 
 $query="select Problems.path, C.A_run_time, C.A_memory, C.A_result, C.A_exit_status, C.B_run_time, C.B_memory, C.B_result, C.B_exit_status from (select A.problem_id, A.run_time as A_run_time, A.memory as A_memory, A.result as A_result, A.exit_status as A_exit_status, B.run_time as B_run_time, B.memory as B_memory, B.result as B_result, B.exit_status as B_exit_status from (select * from JobResults where job_id=$job) as A inner join (select * from JobResults where job_id = $reference_job) as B on A.problem_id = B.problem_id) as C inner join Problems on Problems.id=C.problem_id;";
@@ -252,7 +277,8 @@ while ($i < $num) {
 
   
   
-  if ($job_result != $reference_result) {
+  if ( ($job_result == "sat" || $job_result == "unsat" || $reference_result == "sat" || $reference_result == "unsat")
+       && $job_result != $reference_result) {
     $diff_res[$j]['path'] = $path;
 
     $diff_res[$j]['job_run_time'] = $job_run_time;
@@ -353,18 +379,26 @@ while ($i < $num ) {
   $i = 0;
 $num = count($res);
 while ($i < $num ) {
+
+  $jobRunTimeText = $res[$i]['job_run_time'];
+  $refRunTimeText = $res[$i]['reference_run_time'];
+  $jobRunTime = floatval( $jobRunTimeText );
+  $refRunTime = floatval( $refRunTimeText );
+  if($jobRunTime <= $refRunTime) { $jobRunTimeText = "<b>" . $jobRunTimeText . "</b>"; }
+  if($refRunTime <= $jobRunTime) { $refRunTimeText = "<b>" . $refRunTimeText . "</b>"; }
   ?>
     
   <tr>
     <td> <?php echo $i ?> </td>
     <td> <?php echo $res[$i]['path'] ?> </td>
     
-    <td> <?php echo $res[$i]['job_run_time'] ?> </td>
+
+    <td> <?php echo $jobRunTimeText ?> </td>
     <td> <?php echo $res[$i]['job_memory'] ?> </td>
     <td> <?php echo $res[$i]['job_result'] ?> </td>
     <td> <?php echo $res[$i]['job_exit_status'] ?> </td>
 
-    <td> <?php echo $res[$i]['reference_run_time'] ?> </td>
+    <td> <?php echo $refRunTimeText ?> </td>
     <td> <?php echo $res[$i]['reference_memory'] ?> </td>
     <td> <?php echo $res[$i]['reference_result'] ?> </td>
     <td> <?php echo $res[$i]['reference_exit_status'] ?> </td>
